@@ -1,0 +1,30 @@
+# OS
+Thumbs.db
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Flutter
+build/
+.dart_tool/
+.packages
+pubspec.lock
+flutter_export_environment.sh
+.flutter-plugins
+.flutter-plugins-dependencies
+ios/Flutter/.last_build_id
+android/.gradle/
+android/app/release/
+
+# Web build
+web/.dart_tool/
+
+# Backend
+backend/api/node_modules/
+backend/**/.env
+*.env
+
+# Logs
+*.log
