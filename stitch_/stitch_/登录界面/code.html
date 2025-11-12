@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Flutter Dressing - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#AEC6CF",
+            "background-light": "#FFFFFF",
+            "background-dark": "#101f22",
+            "text-light": "#333333",
+            "text-dark": "#f0f0f0",
+            "text-secondary-light": "#888888",
+            "text-secondary-dark": "#b0b0b0",
+            "border-light": "#e0e0e0",
+            "border-dark": "#444444",
+          },
+          fontFamily: {
+            "display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="flex flex-col items-center justify-center grow w-full max-w-md mx-auto p-6 md:p-8">
+<div class="flex items-center justify-center w-24 h-24 mb-8">
+<div class="relative w-full h-full">
+<div class="absolute inset-0 bg-primary/20 dark:bg-primary/30 rounded-full blur-xl"></div>
+<svg class="relative w-full h-full text-primary" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M12 2C9.25 2 7 4.25 7 7V12.5C7 13.88 5.88 15 4.5 15C3.12 15 2 13.88 2 12.5V12C2 10.9 2.9 10 4 10C5.1 10 6 9.1 6 8V7C6 3.69 8.69 1 12 1C15.31 1 18 3.69 18 7V8C18 9.1 18.9 10 20 10C21.1 10 22 10.9 22 12V12.5C22 13.88 20.88 15 19.5 15C18.12 15 17 13.88 17 12.5V7C17 4.25 14.75 2 12 2ZM12 23C15.31 23 18 20.31 18 17V16C18 14.9 18.9 14 20 14C21.1 14 22 14.9 22 16V17.5C22 19.99 19.99 22 17.5 22C15.01 22 13 19.99 13 17.5V11.5C13 10.12 14.12 9 15.5 9C16.88 9 18 10.12 18 11.5V12H20V11.5C20 9.01 17.99 7 15.5 7C13.01 7 11 9.01 11 11.5V17.5C11 19.99 8.99 22 6.5 22C4.01 22 2 19.99 2 17.5V16C2 14.9 2.9 14 4 14C5.1 14 6 14.9 6 16V17C6 20.31 8.69 23 12 23Z" fill-rule="evenodd"></path>
+</svg>
+</div>
+</div>
+<div class="w-full text-center">
+<h1 class="text-text-light dark:text-text-dark tracking-light text-[32px] font-bold leading-tight">
+          Welcome Back
+        </h1>
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal pt-1 pb-8">
+          Your Personal AI Stylist
+        </p>
+</div>
+<div class="w-full space-y-4">
+<label class="flex flex-col w-full">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal pb-2">Username</p>
+<div class="relative flex w-full flex-1 items-stretch">
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">person</span>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-text-light dark:text-text-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:border-primary h-14 placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark pl-11 pr-4 text-base font-normal leading-normal" placeholder="请输入用户名"/>
+</div>
+</label>
+<label class="flex flex-col w-full">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal pb-2">Password</p>
+<div class="relative flex w-full flex-1 items-stretch">
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">lock</span>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-text-light dark:text-text-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:border-primary h-14 placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark pl-11 pr-11 text-base font-normal leading-normal" placeholder="请输入密码" type="password"/>
+<button class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer">visibility_off</button>
+</div>
+</label>
+</div>
+<div class="flex justify-between items-center w-full mt-4">
+<a class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors" href="#">注册</a>
+<a class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors" href="#">忘记密码?</a>
+</div>
+<div class="w-full flex justify-center">
+<button class="flex items-center justify-center w-auto h-12 px-12 mt-8 rounded-xl bg-zinc-900 dark:bg-zinc-800 text-white text-base font-bold transition-transform active:scale-95">
+        登录
+    </button>
+</div>
+<div class="flex items-center w-full my-8">
+<hr class="w-full border-t border-border-light dark:border-border-dark"/>
+<p class="px-4 text-sm text-text-secondary-light dark:text-text-secondary-dark whitespace-nowrap">或通过以下方式登录</p>
+<hr class="w-full border-t border-border-light dark:border-border-dark"/>
+</div>
+<div class="flex items-center justify-center gap-6">
+<button class="flex h-14 w-14 items-center justify-center rounded-full border border-border-light dark:border-border-dark text-text-light dark:text-text-dark transition-transform active:scale-90 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+<img class="w-6 h-6" data-alt="Google logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDM3VLCVSrtmadfG30GOxfg5B7NJC7Agu6tlP3YbFEM8wwKim1X1_vbWf1FTHjOhNEVuE4_EQf4KrllwZViU6jm4riwBZLij111No-OwNCcz7H172Gtb6owT4pE89EAj6HoNyrYKIIAmWny6BQr0wH8DbzSU4SCqN5bbsfZbBOk59vNsMz1UOlvNWJnH0Gb8R6IkcYX6w_qnPfm771SXf9Fzq2wCF7bbs_uQnzkBkhqpmoLZou9lXDffVspZAn9S0xG_mNiQf910fc"/>
+</button>
+<button class="flex h-14 w-14 items-center justify-center rounded-full border border-border-light dark:border-border-dark text-text-light dark:text-text-dark transition-transform active:scale-90 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+<img class="w-6 h-6 dark:invert" data-alt="Apple logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIM7NOWVMuIsPinllpg15Te97AwkVXyddIXcrrNBnWUiYnG3ZlGKdSXgY6mMAKSHcdiQHKat7tj1EJ5w3-zbI1Xr12lT2dDRBo-8YRF0nGN5qNTYDGQrocrDpMEQCugVdrotwzDhmqne0oFqQut_Ow0KPsaKgsey9u5Wh2KTk3P-0b4WFFuNFble_dCJskdZeg8OyKNJzYnaXDFmnvOlkttFxvM-Ilfa6yoNjQWKjVX8ldDkVpM7cQTuT5ZJ3qcg9Ku67qVWA1GiE"/>
+</button>
+<button class="flex h-14 w-14 items-center justify-center rounded-full border border-border-light dark:border-border-dark text-text-light dark:text-text-dark transition-transform active:scale-90 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+<img class="w-7 h-7" data-alt="WeChat logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBV-YxiXgsGgofOpSuDVn-dNKK7MP2kF9qZ1VFeAbHuiezUjiY-2bn9ulWWtwEbZy3fwY1yEYb-P6JJUafEDtcZwRowRsk7RZB_UDn9IuvSRgQ1_7Z6wT0Za-aIq6PyHL6niZY9dXcCycaEz5vg53evs6ST5GAphXDkqWEcd1qbX4aP8xzjsqy75ZzzuwBCP4OLOJluLtg2iGpx1ubxfKa-XnJInJs7GpyBUGLV-qIq5_v89TsJvJ5Ba4UoAoiQXvZ6S3G8cQOlL88"/>
+</button>
+</div>
+</div>
+</div>
+</body></html>

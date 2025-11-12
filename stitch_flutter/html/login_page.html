@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登录 · stitch_flutter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="page-header">
+        <h1>登录</h1>
+        <p>欢迎回到 stitch，使用账号密码快速进入主页。</p>
+      </header>
+      <section class="page-content" style="max-width: 520px; margin: 0 auto;">
+        <form>
+          <div class="form-field">
+            <label for="email">邮箱</label>
+            <input id="email" type="email" placeholder="请输入邮箱地址" />
+          </div>
+          <div class="form-field">
+            <label for="password">密码</label>
+            <input id="password" type="password" placeholder="请输入登录密码" />
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 24px;
+            "
+          >
+            <label style="display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" />
+              <span>记住我</span>
+            </label>
+            <a href="reset_password_page.html" style="color: #1f1f21;">忘记密码？</a>
+          </div>
+          <button class="button" style="width: 100%;">登录</button>
+        </form>
+
+        <p style="margin-top: 24px; text-align: center; color: #6c6c70;">
+          还没有账号？
+          <a href="register_page.html" style="color: #1f1f21; font-weight: 700;"
+            >立即注册</a
+          >
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
+

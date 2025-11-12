@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Fashion App Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#13c8ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101f22",
+                    },
+                    fontFamily: {
+                        display: ["Plus Jakarta Sans", "Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px",
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-white font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<div class="flex-grow pb-28">
+<header class="flex items-center p-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-xl text-zinc-500"> location_on </span>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] text-zinc-800">Shanghai</h2>
+</div>
+<div class="flex-1"></div>
+<div class="flex size-10 shrink-0 items-center justify-center">
+<div class="aspect-square size-10 rounded-full bg-cover bg-center bg-no-repeat" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD9CmtT00d2Vc4fFrVYdY7SwOdAtTkG41fuZtpPjrnnDspmz0Ad7tBHw-8JoPkY8ZmXcNk1ee77qXhi42UrsZoWcNQkBzCCs1TUGDcBnZp-gwGC73G5nRsFzF9unqI4sPHuttmDAOwn7ex1Z_YYYdhwhwFgu9ZwNMZYScVx_srI5KXLcRpFrawZDbv_P-9cYQwaWC72Yl3EnIRjfrh60Iiupleq8gpVbGhM1CefWgvKWiTjqEVE28Kv086m1TgCXwHxPkAvittYul8')"></div>
+</div>
+</header>
+<h1 class="text-zinc-900 text-[32px] font-bold leading-tight tracking-tight px-4 pb-1 pt-4 text-left">Good Morning, Alex</h1>
+<div class="p-4">
+<div class="flex items-center justify-between gap-4 rounded-xl bg-[#F0F8FA] p-4">
+<div class="flex flex-col gap-1">
+<p class="text-lg font-bold text-zinc-900">25°C, Partly Cloudy</p>
+<p class="text-sm font-normal leading-normal text-zinc-600">A light jacket would be perfect today!</p>
+</div>
+<div class="flex shrink-0 items-center justify-center">
+<span class="material-symbols-outlined !text-5xl text-primary"> partly_cloudy_day </span>
+</div>
+</div>
+</div>
+<h2 class="text-zinc-900 text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Today's Recommendations</h2>
+<div class="flex overflow-x-auto pb-4 [-ms-scrollbar-style:none] [scrollbar-width:none] [&amp;::-webkit-scrollbar]:hidden">
+<div class="flex flex-nowrap items-stretch px-4 gap-4">
+<div class="flex w-60 shrink-0 flex-col gap-3 rounded-xl bg-white p-3 ring-1 ring-zinc-200">
+<div class="w-full aspect-[3/4] rounded-lg bg-cover bg-center bg-no-repeat" data-alt="A person wearing a casual street style outfit with jeans and a stylish jacket" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBl6Mz4Q7uND-TuZfobHQF35G4y8EIzNPea7bfZzuEzcGGgD7ILjS6KDBnSCA9ZwNIyl8Ruhr_LKBFlfzqNpT9mppotA1ku1h20YF9YKIQGsqTMTCi0tCTJKmUOHSk2Yhn2dpiRGf2J5i0a9idRjsK4UsUKLMR1FljEkGjYdtXoNI2fKaZbW4W9rO8WX8xD6-i4mHHp1cWXtTh7ngs9i4AAxiuCn5xwglCgMoTfX42BgGhNI2RRZ7MGERXtZU-f1j1sM0aB5RKMtwY')"></div>
+<div class="flex flex-col flex-1 justify-between gap-3">
+<div>
+<p class="text-base font-medium leading-normal text-zinc-900">Casual Street Style</p>
+<p class="text-sm font-normal leading-normal text-zinc-600">AI Generated Outfit</p>
+</div>
+<button class="flex h-10 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-zinc-900 px-4 text-sm font-bold leading-normal tracking-[0.015em] text-white">
+<span class="truncate">Try On Now</span>
+</button>
+</div>
+</div>
+<div class="flex w-60 shrink-0 flex-col gap-3 rounded-xl bg-white p-3 ring-1 ring-zinc-200">
+<div class="w-full aspect-[3/4] rounded-lg bg-cover bg-center bg-no-repeat" data-alt="A person in a professional office outfit with a blazer and trousers" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuApX9e4g_35eqysBgM7pG4-uolh0y--sImFMVvrBzbRK8U0INBgkd7SkQyHFjWJPvhE4oKmCXH_IfqWXTNeYQY-3HS6qiYDTIbTdZk0NOAL08nVMwLCut2nqdKrf3wPCR9ZUk0FQfqizBcG6QWb2CapOPJow_2vWN4fIevuTIvyzOGPqJWepx0usw8DjpajgDr4Qe1nEiTMLDxbRxdnwKzeRACvkwoU9SBjc9ahhsZOZBBe98160E7_ypQTBNefD7lV-A14ZOTm95c')"></div>
+<div class="flex flex-col flex-1 justify-between gap-3">
+<div>
+<p class="text-base font-medium leading-normal text-zinc-900">Office Ready</p>
+<p class="text-sm font-normal leading-normal text-zinc-600">AI Generated Outfit</p>
+</div>
+<button class="flex h-10 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-zinc-900 px-4 text-sm font-bold leading-normal tracking-[0.015em] text-white">
+<span class="truncate">Try On Now</span>
+</button>
+</div>
+</div>
+<div class="flex w-60 shrink-0 flex-col gap-3 rounded-xl bg-white p-3 ring-1 ring-zinc-200">
+<div class="w-full aspect-[3/4] rounded-lg bg-cover bg-center bg-no-repeat" data-alt="A person in a comfortable weekend outfit, like a cozy sweater and pants" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA58PGijm14eETwMEtVdlOeK5xJOsNoz91oc28SlXMfebLEstt9ahNNWJCHcPWeHfdeBfIqtuSB3dZQZBZ_O5h1Bf7ZEqDQvO4TfC4JL8n8dsRkKfeFucNNWuH-uY3ohiscgPVVNkdLgIBwt6n7PD2CtBbf3wygmYhiT_Xtl1qwIbYoJ7dcZRYU9ogg3Igm-MeQogrGHtpBQtcQLMNxeq9Lcxoalau2VpC8806Ik8EroVuDuZF0LJV-8N8zsWg41N9touywKWyOlBY')"></div>
+<div class="flex flex-col flex-1 justify-between gap-3">
+<div>
+<p class="text-base font-medium leading-normal text-zinc-900">Weekend Comfort</p>
+<p class="text-sm font-normal leading-normal text-zinc-600">AI Generated Outfit</p>
+</div>
+<button class="flex h-10 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-zinc-900 px-4 text-sm font-bold leading-normal tracking-[0.015em] text-white">
+<span class="truncate">Try On Now</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="h-10"></div>
+</div>
+<nav class="fixed bottom-0 left-0 right-0 bg-white/80 p-4 backdrop-blur-sm">
+<div class="mx-auto flex max-w-md items-center justify-around rounded-full bg-white px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined"> home </span>
+<span class="text-xs font-medium">首页</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-zinc-500" href="#">
+<span class="material-symbols-outlined"> checkroom </span>
+<span class="text-xs font-medium">我的衣柜</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-zinc-500" href="#">
+<span class="material-symbols-outlined"> auto_awesome </span>
+<span class="text-xs font-medium">AI试穿室</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-zinc-500" href="#">
+<span class="material-symbols-outlined"> person </span>
+<span class="text-xs font-medium">我的</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

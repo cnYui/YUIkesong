@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html class="" lang="zh"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Wardrobe UI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"beige-accent": "#F5F5DC", "green-accent": "#D7E5D8", "background-light": "#f7f7f7", "background-dark": "#191919", "surface-light": "#FFFFFF", "surface-dark": "#1E1E1E", "text-primary-light": "#1A1A1A", "text-primary-dark": "#E5E5E5", "text-secondary-light": "#666666", "text-secondary-dark": "#999999", primary: "#ffffff"}, fontFamily: {display: "Plus Jakarta Sans"}, borderRadius: {DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px"}}}};</script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+<div class="flex items-center p-4">
+<div class="flex size-12 shrink-0 items-center justify-start">
+</div>
+<h1 class="flex-1 text-center text-xl font-bold tracking-tight text-text-primary-light dark:text-text-primary-dark">我的衣柜</h1>
+<div class="flex w-24 items-center justify-end gap-2">
+<button class="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full text-text-primary-light dark:text-text-primary-dark">
+<span class="material-symbols-outlined text-2xl">search</span>
+</button>
+<button class="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full text-text-primary-light dark:text-text-primary-dark">
+<span class="material-symbols-outlined text-2xl">tune</span>
+</button>
+</div>
+</div>
+</div>
+<div class="sticky top-[72px] z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm px-6">
+<div class="w-full overflow-x-auto whitespace-nowrap no-scrollbar border-b border-gray-200 dark:border-white/10">
+<div class="flex gap-4">
+<a class="flex flex-col items-center justify-center py-4" href="#">
+<p class="text-sm font-semibold leading-normal text-text-primary-light dark:text-text-primary-dark px-2">全部</p>
+<div class="mt-2 h-1 w-full rounded-full bg-text-primary-light dark:bg-text-primary-dark"></div>
+</a>
+<a class="flex flex-col items-center justify-center py-4 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<p class="text-sm font-semibold leading-normal px-2">上装</p>
+<div class="mt-2 h-1 w-full rounded-full bg-transparent"></div>
+</a>
+<a class="flex flex-col items-center justify-center py-4 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<p class="text-sm font-semibold leading-normal px-2">下装</p>
+<div class="mt-2 h-1 w-full rounded-full bg-transparent"></div>
+</a>
+<a class="flex flex-col items-center justify-center py-4 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<p class="text-sm font-semibold leading-normal px-2">连衣裙</p>
+<div class="mt-2 h-1 w-full rounded-full bg-transparent"></div>
+</a>
+<a class="flex flex-col items-center justify-center py-4 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<p class="text-sm font-semibold leading-normal px-2">鞋子</p>
+<div class="mt-2 h-1 w-full rounded-full bg-transparent"></div>
+</a>
+<a class="flex flex-col items-center justify-center py-4 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<p class="text-sm font-semibold leading-normal px-2">配饰</p>
+<div class="mt-2 h-1 w-full rounded-full bg-transparent"></div>
+</a>
+<a class="flex flex-col items-center justify-center py-4 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<p class="text-sm font-semibold leading-normal px-2">包包</p>
+<div class="mt-2 h-1 w-full rounded-full bg-transparent"></div>
+</a>
+</div>
+</div>
+</div>
+<div class="flex-1 p-6 pb-32">
+<div class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-6">
+<div class="flex cursor-pointer flex-col gap-3">
+<div class="aspect-square w-full rounded-xl bg-surface-light dark:bg-surface-dark overflow-hidden">
+<div class="h-full w-full bg-cover bg-center bg-no-repeat" data-alt="White T-shirt with clean background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuApweC_IRzecAv0S0RzevdL2C4LpmEH8lxnRpYmTwNHgXBFs1YxYahW5f5xjumsq6H6r9LZ92isNkaNDBtbzoSJvKMDGc5JxZyteXjzR54ZIidnq2Niwv1492BdIDczcbcRRw_IAGmi_TfrBn3ke-RCX-O9siCEcEkmENofPwr7bACoCERZJqE4dVlv6Ha3VlnQpd7iMxRZqF4B66iQeVSqCUXdPIvnqk4ncAgEOLu5tlQm65edTkyhDTDbvOUdysLs91-6I6Eu6zU");'></div>
+</div>
+<p class="text-center text-sm font-medium text-text-primary-light dark:text-text-primary-dark">白色T恤</p>
+</div>
+<div class="flex cursor-pointer flex-col gap-3">
+<div class="aspect-square w-full rounded-xl bg-surface-light dark:bg-surface-dark overflow-hidden">
+<div class="h-full w-full bg-cover bg-center bg-no-repeat" data-alt="Blue jeans with clean background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBc4BKS_D8IMC1vgVyjwjEF-FZJsTd-pu8kr-rinUcXUr-rDoSMU2wWwHZnfHK39KMcOR5OGkgra8VyBT8zdP2hC82FBOSv-yYogLwNEne9lQdGzasE21pF8B5yf48oSAPj-JpdA1f6UZiHKzM7cFjBzfG5jSCLsNK4giFmdryxUH5U4M8782DmHG4UwQSNrtNlQvvtHiXUiFmkK81lLg-3UmzCZpFCtUwAzU9Qye-8eRdN619f6xD10p0rOnTvpV7VCX1itw3HueI");'></div>
+</div>
+<p class="text-center text-sm font-medium text-text-primary-light dark:text-text-primary-dark">蓝色牛仔裤</p>
+</div>
+<div class="flex cursor-pointer flex-col gap-3">
+<div class="aspect-square w-full rounded-xl bg-surface-light dark:bg-surface-dark overflow-hidden">
+<div class="h-full w-full bg-cover bg-center bg-no-repeat" data-alt="Black dress with clean background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDEY40ebw5io9194H7bDF20RZWQm8Z5XnJm8VZZ5N2J9Ftu3NEFsRLLUmKU9yTlJh-Gwg0tlXvXTX_Y2kBX93ciL1bBEMUbpytNNPig9Zha1ipOhA-KinpMpghpx7qAs4HQPhtnOF8Z3Bo42bSJHy76zXJIB8NO2f8Bh-wpr1qfbPsfYs1iGn6GxL1mj9nHGD75tPYchuXUpJ_7BGmeNvrbubtrgPEwE6ZwbTe0F_fpckcHsiVCHG04X-9y4tVTfV0Y6r_oUjvMCv8");'></div>
+</div>
+<p class="text-center text-sm font-medium text-text-primary-light dark:text-text-primary-dark">黑色连衣裙</p>
+</div>
+<div class="flex cursor-pointer flex-col gap-3">
+<div class="aspect-square w-full rounded-xl bg-surface-light dark:bg-surface-dark overflow-hidden">
+<div class="h-full w-full bg-cover bg-center bg-no-repeat" data-alt="Athletic sneakers with clean background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBPloNa5aNoXRrDpKQ6XS2WIbCE3T5C8XmUuMRpyYS-j95-jwYStDf2Ljgg5a-icm12ypyEPAL-8jFaUcO0W25bZvKD0snBs5mxELx6lsOwZsB8THD2p6HxbMdUY_oMrTzjGZmzsuAvypuLA9cWyRdWw8MhuaXBfcx8pvsnqeZP56p8KDaHEKamDgVJE1fiylCjsShlEbSB2TFJpTiwWukXk64E6ZrlmvkpSnl-EORr7CyytZE3TLVzmoOdg0sa_KxiTmgJnZ6DpHg");'></div>
+</div>
+<p class="text-center text-sm font-medium text-text-primary-light dark:text-text-primary-dark">运动鞋</p>
+</div>
+<div class="flex cursor-pointer flex-col gap-3">
+<div class="aspect-square w-full rounded-xl bg-surface-light dark:bg-surface-dark overflow-hidden">
+<div class="h-full w-full bg-cover bg-center bg-no-repeat" data-alt="Sunglasses with clean background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA6fVFlsBoQimKoT3s9SniLo-I8P8-zVmLPAi6Np2KiGoruYuUBeZ7L9pqq4OFU6yd0c9rruQ6lbpUGSqZABpDfvWqedmba7cQJAd-0oFSsZXmpXNwj7jlJ5yJHe--GY2pcO7kPNhDKc-bgGxbXIMzdEMSUN-W6JPLzxndubZCkcOjkK9vVMpQJ8Tbj_WxxFFX3SxSuecynD1bBtDxYulrCsRsZTUmrAgJ60FGMSv3swE28-0UssK8xHMj3e8P_02a0b3t9iuSjRB0");'></div>
+</div>
+<p class="text-center text-sm font-medium text-text-primary-light dark:text-text-primary-dark">太阳镜</p>
+</div>
+<div class="flex cursor-pointer flex-col gap-3">
+<div class="aspect-square w-full rounded-xl bg-surface-light dark:bg-surface-dark overflow-hidden">
+<div class="h-full w-full bg-cover bg-center bg-no-repeat" data-alt="Brown leather handbag with clean background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB7mykjxnzJyz1m2JQZm5i49X5nUAls9eyn_pYPyP_LLKKYa7XCF0oMU96gwGQBs40FUS0X2tS-RBPekTi-zcJ9ThiSW0uvZG4AYYf0hMJXIZCcIunGxDO3-1EIuIo9OMmzE-u2Y0xPDHl3VvpnYvige-k3v1Ew5D8Qtl1n4b3MedlQHZJdntr7M-MHSOtFBSVfqnuT9eqekzOluNghKszCrsbjBDAHmzKI-YJr5mWqlqsTZQUBaEA0At69gFHjLdQgeTp2Zx0Z_Js");'></div>
+</div>
+<p class="text-center text-sm font-medium text-text-primary-light dark:text-text-primary-dark">手提包</p>
+</div>
+<div class="flex cursor-pointer flex-col gap-3">
+<div class="aspect-square w-full rounded-xl bg-surface-light dark:bg-surface-dark overflow-hidden">
+<div class="h-full w-full bg-cover bg-center bg-no-repeat" data-alt="Striped shirt with clean background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAc8pm5bvbuy7LrXPoX0D-msljlHWuELh8cS-je007GMkKeULCSPVGiCF8n1B363jp92gY-YOcwLBF_FuKHm9s-8C-2_LLPeoi13Q1OPDCJypMB1PhYyridvCDRZ8A1ZabZUO6SOB1ZO42n5RCaffMROdXBkGGdjkSsClX_AobowKlN6Ll7YqoKryKpuxOiGBtlkJj8OLbPogd5BMKyUTOCmcrCzM1mm9xnHty9rzvWKpUmVpDz4szWB7vdRuyj3XixV4LKa_rde4M");'></div>
+</div>
+<p class="text-center text-sm font-medium text-text-primary-light dark:text-text-primary-dark">条纹衬衫</p>
+</div>
+<div class="flex cursor-pointer flex-col gap-3">
+<div class="aspect-square w-full rounded-xl bg-surface-light dark:bg-surface-dark overflow-hidden">
+<div class="h-full w-full bg-cover bg-center bg-no-repeat" data-alt="Khaki shorts with clean background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCyou_Ay7EGZcINUmwokf-hngteoAjHo4HOlKKKqfTrT0AodgDSkgkPpAH88_at3v8JpCG7ZB620gj2LPl33CL2w5Ms4aeN8kUAJO3XAqRnc40WOo9SSMw9Z3-L_HVhmcH8bneD_jOtH4rMcmCl9ZKxr7D222WtDgHthFLTiMVmwBiUiIhCJL_-Ax6zVt5i9VFnLi5o213juz1pvOvU66ZZ0zgmtR24SCFel65oOmWZD7NjJsrvjOu6ZVA6N7IM0PXRMTi7j5_yVeM");'></div>
+</div>
+<p class="text-center text-sm font-medium text-text-primary-light dark:text-text-primary-dark">卡其色短裤</p>
+</div>
+<div class="flex cursor-pointer flex-col gap-3">
+<div class="aspect-square w-full rounded-xl bg-surface-light dark:bg-surface-dark overflow-hidden">
+<div class="h-full w-full bg-cover bg-center bg-no-repeat" data-alt="Printed floral skirt with clean background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD1LKL49mzR0AI5YsGvt3azlURRDnkM_KSzTjF2T6obJ4UGE4Z8OkGWDir0ty0HK_586Nh-5P88l1J5E65_KO5s_SVIt72Y2CpAi1ntHbipSGQa5GsfKNDpDMGiIB1UR9nRb18Tti9h1UwDq_AaXek0KyL-Fb7jT3kz79RkaaYF74gN-s0cRCBT-FJfPoEhbSCnGB-ULNgGavVYcVJvqwNWkryVyShD5_uF8nAboaVNSX0GRI-XfYGpY_Rz_Sc_JTbyhX1csbZ0aFA");'></div>
+</div>
+<p class="text-center text-sm font-medium text-text-primary-light dark:text-text-primary-dark">印花半身裙</p>
+</div>
+<div class="flex cursor-pointer flex-col gap-3">
+<div class="aspect-square w-full rounded-xl bg-surface-light dark:bg-surface-dark overflow-hidden">
+<div class="h-full w-full bg-cover bg-center bg-no-repeat" data-alt="High-heeled shoes with clean background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB2mGaXRPi7NtXFSA5fjKPjWNFJLVnmb2EQwhzg6k0UeJU9QKoPbpmbEuIvP9CQqS6C9n8e1CuEXwYQev9tnVbHAEd6uFc9n22YgQ2btJRg31W7nE_DTnjJ54JLBoWz0PWHTPiDV4oPLHoXwEAHPHgaFzJh9XJv7c0qVcn4TY9DIUNXeYUEaIEeSoy6ZCISexhLbaJXQDNwwDvZHDhLIGMOtb-NBGz4ZQU_T_uNCaI7MHoarT6As1GOr_4zvQmippvPg3UXja0vHg4");'></div>
+</div>
+<p class="text-center text-sm font-medium text-text-primary-light dark:text-text-primary-dark">高跟鞋</p>
+</div>
+<div class="flex cursor-pointer flex-col gap-3">
+<div class="aspect-square w-full rounded-xl bg-surface-light dark:bg-surface-dark overflow-hidden">
+<div class="h-full w-full bg-cover bg-center bg-no-repeat" data-alt="Wool scarf with clean background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDlR4u_zYKI1yNt_vj-LY79jdOuFtWyDtiKkAeLucxiIrpHUzD9MDvR8pYcebpv20ek5z32WHIqcwRn2ZvopbMUCmurcLII927ZL5rpi-5-YasZayljzwPL9W8VQDMY6UuRL5hWwqtuEV0tAIJi9w9ipVoQJIEVkKkCzSS2DKS2K8UpYCKVB4pttcydbVkTo0MWoWVml7r6s1Sd3HheKO40_xona6JOOlsUwoVDDobroIIGPL-cLmItQMnfRjbA5pmi4Z2g6bcjNAg");'></div>
+</div>
+<p class="text-center text-sm font-medium text-text-primary-light dark:text-text-primary-dark">羊毛围巾</p>
+</div>
+<div class="flex cursor-pointer flex-col gap-3">
+<div class="aspect-square w-full rounded-xl bg-surface-light dark:bg-surface-dark overflow-hidden">
+<div class="h-full w-full bg-cover bg-center bg-no-repeat" data-alt="Backpack with clean background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBqbrYufRlUaPDGEIg45sHxeFp2umPUZH1N9GHa0P9J6Jf8jrpilITqCP6rTNcjkwP4r_Z9QKvnkiX52bHRZZIJxL9IoQY2ueD23NTYdvgYYqz4-eY3F5U9UV68wvJTVq89hdU8s-KkBMBW0lvk7G_W17bK3XhCmf3cj3YhIRmN1EFodxHnUbN0eGwMiBGWT9cuSwkzsrN1D-hxJTm0x_Qph8lLd0NDZiXNs7zw2jjMhObzM8mj1KgKUWJzULVEd7Tr_s8u6Kk1G2A");'></div>
+</div>
+<p class="text-center text-sm font-medium text-text-primary-light dark:text-text-primary-dark">双肩背包</p>
+</div>
+</div>
+</div>
+<div class="fixed bottom-8 right-6 z-20">
+<button class="flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-beige-accent text-text-primary-light dark:bg-green-accent dark:text-background-dark">
+<span class="material-symbols-outlined text-3xl">add_a_photo</span>
+</button>
+</div>
+<div class="fixed bottom-0 left-0 right-0 z-30 px-4 pb-4 pt-2">
+<div class="flex justify-around rounded-full bg-surface-light dark:bg-surface-dark p-2 shadow-[0_4px_16px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 rounded-full p-2 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-xs font-medium">首页</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 rounded-full bg-beige-accent p-2 text-text-primary-light dark:bg-green-accent dark:text-background-dark" href="#">
+<span class="material-symbols-outlined text-2xl">checkroom</span>
+<span class="text-xs font-medium">我的衣柜</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 rounded-full p-2 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-2xl">dry_cleaning</span>
+<span class="text-xs font-medium">AI试穿室</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 rounded-full p-2 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-xs font-medium">我的</span>
+</a>
+</div>
+</div>
+</div>
+</body></html>

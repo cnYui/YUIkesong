@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#13c8ec",
+            "background-light": "#f8f9fa",
+          },
+          fontFamily: {
+            "display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings:
+      'FILL' 0,
+      'wght' 300,
+      'GRAD' 0,
+      'opsz' 24
+    }
+    .material-symbols-outlined.filled {
+        font-variation-settings: 'FILL' 1;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light pb-28">
+<div class="flex items-center p-4 pb-2 justify-between bg-background-light">
+<h2 class="text-slate-900 text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">我的</h2>
+</div>
+<div class="flex p-4 @container">
+<div class="flex w-full flex-col gap-4 @[520px]:flex-row @[520px]:items-center">
+<div class="flex gap-4 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-20 w-20 min-w-20" data-alt="User profile avatar placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCeBnG-RJYwReA5PdBj2L8GdRunsfgcsYD-XIsWsHttDb89yxpuCuVu8s-QzQkLMX7mfFQLcW73EoaoTpVDU5woG4xjO7jvZmWUAx34yTlV4clAYYdC7xAwrZNSUR6w2g5BndIktVmiBEcXSfHgPl380QrVIuIgx7IW9432fOfndtFwyUCD3U1c-c2tOScs7bIpO673mVlHEr3Db58xFuL1pqF5mz--93cgR-l7WQHHDH9NxScg_S2io9-nEKeH89mWqHq_LZvAg08");'></div>
+<p class="text-slate-900 text-[22px] font-bold leading-tight tracking-[-0.015em]">时尚达人小王</p>
+</div>
+</div>
+</div>
+<div class="h-4"></div>
+<div class="flex flex-col gap-2 px-4">
+<div class="flex flex-col bg-white rounded-xl overflow-hidden shadow-sm shadow-slate-200/50">
+<div class="flex items-center gap-4 px-4 min-h-[60px] justify-between border-b border-slate-100">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary text-2xl">photo_camera</span>
+<p class="text-slate-800 text-base font-normal leading-normal flex-1 truncate">管理我的自拍</p>
+</div>
+<div class="shrink-0">
+<span class="material-symbols-outlined text-slate-400 text-2xl">chevron_right</span>
+</div>
+</div>
+<div class="flex items-center gap-4 px-4 min-h-[60px] justify-between">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary text-2xl">bookmark</span>
+<p class="text-slate-800 text-base font-normal leading-normal flex-1 truncate">我保存的穿搭</p>
+</div>
+<div class="shrink-0">
+<span class="material-symbols-outlined text-slate-400 text-2xl">chevron_right</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col bg-white rounded-xl overflow-hidden shadow-sm shadow-slate-200/50">
+<div class="flex items-center gap-4 px-4 min-h-[60px] justify-between border-b border-slate-100">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary text-2xl">settings</span>
+<p class="text-slate-800 text-base font-normal leading-normal flex-1 truncate">设置</p>
+</div>
+<div class="shrink-0">
+<span class="material-symbols-outlined text-slate-400 text-2xl">chevron_right</span>
+</div>
+</div>
+<div class="flex items-center gap-4 px-4 min-h-[60px] justify-between">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary text-2xl">info</span>
+<p class="text-slate-800 text-base font-normal leading-normal flex-1 truncate">关于我们</p>
+</div>
+<div class="shrink-0">
+<span class="material-symbols-outlined text-slate-400 text-2xl">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 w-full bg-transparent px-4 pb-4 pt-2">
+<div class="bg-white rounded-xl shadow-lg shadow-slate-300/40 flex justify-around items-center h-16">
+<a class="flex flex-col items-center justify-center gap-0.5 text-slate-500" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-medium">首页</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-slate-500" href="#">
+<span class="material-symbols-outlined">checkroom</span>
+<span class="text-xs font-medium">我的衣柜</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-slate-500" href="#">
+<span class="material-symbols-outlined">dry_cleaning</span>
+<span class="text-xs font-medium">AI试穿室</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-primary" href="#">
+<span class="material-symbols-outlined filled">person</span>
+<span class="text-xs font-bold">我的</span>
+</a>
+</div>
+</div>
+</body></html>

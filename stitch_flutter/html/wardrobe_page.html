@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的衣柜 · stitch_flutter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="page-header">
+        <h1>我的衣柜</h1>
+        <p>浏览、筛选与管理衣物，支持多选与悬浮操作栏。</p>
+      </header>
+      <section class="page-content">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+          "
+        >
+          <div class="badge">
+            <span>👗 共 36 件</span>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <button class="button secondary">查找</button>
+            <button class="button secondary">筛选</button>
+          </div>
+        </div>
+
+        <div
+          style="
+            position: sticky;
+            top: 0;
+            background: #fff;
+            padding: 12px 0;
+            z-index: 10;
+            margin-bottom: 24px;
+          "
+        >
+          <div class="tag-list">
+            <span class="tag" style="background: #1f1f21; color: #fff;">全部</span>
+            <span class="tag">上衣</span>
+            <span class="tag">裤装</span>
+            <span class="tag">外套</span>
+            <span class="tag">鞋履</span>
+            <span class="tag">配饰</span>
+          </div>
+        </div>
+
+        <div class="grid three">
+          <div class="card" style="padding: 16px;">
+            <img
+              src="https://images.unsplash.com/photo-1542291026-7eec264c27ff"
+              alt="白色衬衫"
+              style="width: 100%; height: 220px; border-radius: 16px; object-fit: cover;"
+            />
+            <h3 style="margin-top: 16px;">白色衬衫</h3>
+            <p>分类：上衣｜春夏常备</p>
+          </div>
+          <div class="card" style="padding: 16px;">
+            <img
+              src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab"
+              alt="浅色牛仔裤"
+              style="width: 100%; height: 220px; border-radius: 16px; object-fit: cover;"
+            />
+            <h3 style="margin-top: 16px;">浅色牛仔裤</h3>
+            <p>分类：裤装｜百搭款</p>
+          </div>
+          <div class="card" style="padding: 16px;">
+            <img
+              src="https://images.unsplash.com/photo-1542291026-7eec264c27ff"
+              alt="黑色短靴"
+              style="width: 100%; height: 220px; border-radius: 16px; object-fit: cover;"
+            />
+            <h3 style="margin-top: 16px;">黑色短靴</h3>
+            <p>分类：鞋履｜秋冬常用</p>
+          </div>
+          <div class="card" style="padding: 16px;">
+            <img
+              src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f"
+              alt="格纹大衣"
+              style="width: 100%; height: 220px; border-radius: 16px; object-fit: cover;"
+            />
+            <h3 style="margin-top: 16px;">格纹大衣</h3>
+            <p>分类：外套｜本周新增</p>
+          </div>
+          <div class="card" style="padding: 16px;">
+            <img
+              src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab"
+              alt="休闲运动鞋"
+              style="width: 100%; height: 220px; border-radius: 16px; object-fit: cover;"
+            />
+            <h3 style="margin-top: 16px;">休闲运动鞋</h3>
+            <p>分类：鞋履｜日常通勤</p>
+          </div>
+          <div class="card" style="padding: 16px;">
+            <img
+              src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f"
+              alt="牛仔外套"
+              style="width: 100%; height: 220px; border-radius: 16px; object-fit: cover;"
+            />
+            <h3 style="margin-top: 16px;">牛仔外套</h3>
+            <p>分类：外套｜经典款</p>
+          </div>
+        </div>
+
+        <div style="margin-top: 32px;">
+          <h2 class="section-title">智能搭配建议</h2>
+          <p style="color: #6c6c70;">
+            选择两件以上衣物后，可在下方悬浮窗预览并进入 AI 试穿室生成搭配。
+          </p>
+        </div>
+
+        <div class="floating-bar" style="margin-top: 48px;">
+          <div class="chip-list" style="flex: 1;">
+            <span class="chip">白色衬衫</span>
+            <span class="chip">浅色牛仔裤</span>
+            <span class="chip">黑色短靴</span>
+            <span class="chip">格纹大衣</span>
+            <span class="chip">针织围巾</span>
+          </div>
+          <button class="button secondary">取消选择</button>
+          <button class="button">一键生成</button>
+        </div>
+
+        <footer class="nav-bar">
+          <span>首页</span>
+          <span class="active">我的衣柜</span>
+          <span>社区</span>
+          <span>AI 试穿室</span>
+          <span>我的</span>
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>
+

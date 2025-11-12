@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>保存衣物 · stitch_flutter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="page-header">
+        <h1>保存衣物</h1>
+        <p>为识别完成的衣物命名并选择分类，保存到我的衣柜。</p>
+      </header>
+      <section class="page-content" style="max-width: 680px; margin: 0 auto;">
+        <div
+          style="
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto 24px;
+            border-radius: 20px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f9fafb 0%, #f1f5f9 100%);
+          "
+        >
+          <img
+            src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab"
+            alt="待保存的衣物"
+            style="width: 100%; border-radius: 16px;"
+          />
+        </div>
+
+        <form>
+          <div class="form-field">
+            <label for="cloth-name">衣物名称</label>
+            <input id="cloth-name" type="text" placeholder="例如：白色纯棉T恤" />
+          </div>
+          <div class="form-field">
+            <label for="cloth-category">选择类别</label>
+            <select id="cloth-category">
+              <option>上装</option>
+              <option>下装</option>
+              <option>连衣裙</option>
+              <option>外套</option>
+              <option>鞋履</option>
+              <option>配饰</option>
+            </select>
+          </div>
+          <div style="text-align: center; margin-top: 32px;">
+            <button class="button" style="width: 220px;">保存到衣柜</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
+
