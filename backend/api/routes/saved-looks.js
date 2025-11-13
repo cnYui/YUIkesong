@@ -109,29 +109,55 @@ export function setupSavedLooksRoutes(app, supabase, authenticateToken) {
         return res.status(500).json({ code: 500, message: '获取保存穿搭列表失败' });
       }
 
-      // 获取每个穿搭的衣物图片
+      // 获取每个穿搭的衣物图片（改为手动关联查询）
       const looksWithItems = await Promise.all(
         (data || []).map(async (look) => {
-          const { data: items, error: itemsError } = await supabase
+          // 第一步：获取saved_look_items记录
+          const { data: lookItems, error: lookItemsError } = await supabase
             .from('saved_look_items')
-            .select(`
-              wardrobe_item_id,
-              slot,
-              wardrobe_items!inner(image_path)
-            `)
+            .select('wardrobe_item_id, slot')
             .eq('saved_look_id', look.id)
             .order('slot');
 
-          console.log(`获取穿搭 ${look.id} 的衣物图片:`, { items, itemsError });
+          console.log(`穿搭 ${look.id} 的衣物关联记录:`, { lookItems, lookItemsError });
 
-          const clothingImageUrls = items ? items.map(item => {
-            // 处理wardrobe_items可能是对象或数组的情况
-            const imagePath = Array.isArray(item.wardrobe_items) 
-              ? item.wardrobe_items[0]?.image_path 
-              : item.wardrobe_items?.image_path;
-            console.log(`衣物项 ${item.wardrobe_item_id} 的图片路径:`, imagePath);
-            return imagePath;
-          }).filter(path => path) : [];
+          if (lookItemsError || !lookItems || lookItems.length === 0) {
+            console.log(`穿搭 ${look.id} 没有关联的衣物`);
+            return {
+              ...look,
+              clothing_image_urls: []
+            };
+          }
+
+          // 第二步：根据wardrobe_item_id批量查询衣物信息
+          const wardrobeItemIds = lookItems.map(item => item.wardrobe_item_id);
+          console.log(`查询衣物IDs:`, wardrobeItemIds);
+
+          const { data: wardrobeItems, error: wardrobeError } = await supabase
+            .from('wardrobe_items')
+            .select('id, image_path')
+            .in('id', wardrobeItemIds);
+
+          console.log(`查询到的衣物详情:`, { wardrobeItems, wardrobeError });
+
+          if (wardrobeError || !wardrobeItems) {
+            console.error(`查询衣物详情失败:`, wardrobeError);
+            return {
+              ...look,
+              clothing_image_urls: []
+            };
+          }
+
+          // 第三步：按照slot顺序组装image_path数组
+          const clothingImageUrls = lookItems.map(lookItem => {
+            const wardrobeItem = wardrobeItems.find(w => w.id === lookItem.wardrobe_item_id);
+            if (wardrobeItem) {
+              console.log(`slot ${lookItem.slot}: ${wardrobeItem.image_path}`);
+              return wardrobeItem.image_path;
+            }
+            console.warn(`未找到衣物 ${lookItem.wardrobe_item_id}`);
+            return null;
+          }).filter(path => path !== null);
 
           console.log(`穿搭 ${look.id} 最终衣物图片URLs:`, clothingImageUrls);
 
