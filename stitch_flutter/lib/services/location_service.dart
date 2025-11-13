@@ -263,7 +263,7 @@ class CityInfo {
   final String name;   // 城市名称
   final String adcode; // 城市编码
 
-  CityInfo({
+  const CityInfo({
     required this.name,
     required this.adcode,
   });
