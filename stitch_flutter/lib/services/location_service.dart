@@ -132,6 +132,130 @@ class LocationService {
       CityInfo(name: '西安市', adcode: '610100'),
     ];
   }
+
+  /// 获取所有省份列表
+  /// 使用高德地图行政区划API，获取省级行政区
+  static Future<List<ProvinceInfo>> getProvinces() async {
+    try {
+      final url = Uri.parse(
+        'https://restapi.amap.com/v3/config/district?key=$_apiKey&keywords=中国&subdistrict=1&extensions=base&output=JSON'
+      );
+      
+      print('📍 请求省份列表API: $url');
+      
+      final response = await http.get(url);
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+        
+        if (data['status'] == '1' && data['districts'] != null) {
+          final districts = data['districts'] as List;
+          if (districts.isNotEmpty) {
+            // 第一层是中国，第二层是省份
+            final china = districts[0];
+            final provinces = china['districts'] as List? ?? [];
+            
+            return provinces.map((p) => ProvinceInfo(
+              name: p['name'] ?? '',
+              adcode: p['adcode'] ?? '',
+            )).toList();
+          }
+        }
+      }
+    } catch (e) {
+      print('❌ 获取省份列表异常: $e');
+    }
+    
+    // 如果失败，返回常用省份列表
+    return _getDefaultProvinces();
+  }
+
+  /// 根据省份获取城市列表
+  /// [provinceAdcode] 省份编码
+  static Future<List<CityInfo>> getCitiesByProvince(String provinceAdcode) async {
+    try {
+      final url = Uri.parse(
+        'https://restapi.amap.com/v3/config/district?key=$_apiKey&keywords=$provinceAdcode&subdistrict=1&extensions=base&output=JSON'
+      );
+      
+      print('📍 请求城市列表API: $url');
+      
+      final response = await http.get(url);
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+        
+        if (data['status'] == '1' && data['districts'] != null) {
+          final districts = data['districts'] as List;
+          if (districts.isNotEmpty) {
+            // 第一层是省份，第二层是城市
+            final province = districts[0];
+            final cities = province['districts'] as List? ?? [];
+            
+            return cities.map((c) => CityInfo(
+              name: c['name'] ?? '',
+              adcode: c['adcode'] ?? '',
+            )).toList();
+          }
+        }
+      }
+    } catch (e) {
+      print('❌ 获取城市列表异常: $e');
+    }
+    
+    return [];
+  }
+
+  /// 获取默认省份列表（常用省份）
+  static List<ProvinceInfo> _getDefaultProvinces() {
+    return [
+      ProvinceInfo(name: '北京市', adcode: '110000'),
+      ProvinceInfo(name: '天津市', adcode: '120000'),
+      ProvinceInfo(name: '河北省', adcode: '130000'),
+      ProvinceInfo(name: '山西省', adcode: '140000'),
+      ProvinceInfo(name: '内蒙古自治区', adcode: '150000'),
+      ProvinceInfo(name: '辽宁省', adcode: '210000'),
+      ProvinceInfo(name: '吉林省', adcode: '220000'),
+      ProvinceInfo(name: '黑龙江省', adcode: '230000'),
+      ProvinceInfo(name: '上海市', adcode: '310000'),
+      ProvinceInfo(name: '江苏省', adcode: '320000'),
+      ProvinceInfo(name: '浙江省', adcode: '330000'),
+      ProvinceInfo(name: '安徽省', adcode: '340000'),
+      ProvinceInfo(name: '福建省', adcode: '350000'),
+      ProvinceInfo(name: '江西省', adcode: '360000'),
+      ProvinceInfo(name: '山东省', adcode: '370000'),
+      ProvinceInfo(name: '河南省', adcode: '410000'),
+      ProvinceInfo(name: '湖北省', adcode: '420000'),
+      ProvinceInfo(name: '湖南省', adcode: '430000'),
+      ProvinceInfo(name: '广东省', adcode: '440000'),
+      ProvinceInfo(name: '广西壮族自治区', adcode: '450000'),
+      ProvinceInfo(name: '海南省', adcode: '460000'),
+      ProvinceInfo(name: '重庆市', adcode: '500000'),
+      ProvinceInfo(name: '四川省', adcode: '510000'),
+      ProvinceInfo(name: '贵州省', adcode: '520000'),
+      ProvinceInfo(name: '云南省', adcode: '530000'),
+      ProvinceInfo(name: '西藏自治区', adcode: '540000'),
+      ProvinceInfo(name: '陕西省', adcode: '610000'),
+      ProvinceInfo(name: '甘肃省', adcode: '620000'),
+      ProvinceInfo(name: '青海省', adcode: '630000'),
+      ProvinceInfo(name: '宁夏回族自治区', adcode: '640000'),
+      ProvinceInfo(name: '新疆维吾尔自治区', adcode: '650000'),
+    ];
+  }
+}
+
+/// 省份信息
+class ProvinceInfo {
+  final String name;   // 省份名称
+  final String adcode; // 省份编码
+
+  ProvinceInfo({
+    required this.name,
+    required this.adcode,
+  });
+
+  @override
+  String toString() => '$name ($adcode)';
 }
 
 /// 城市信息

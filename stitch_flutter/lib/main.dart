@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'models/stitch_tab.dart';
 import 'pages/about_page.dart';
 import 'pages/ai_fitting_room_page.dart';
+import 'pages/city_selection_page.dart';
 import 'pages/community_page.dart';
 import 'pages/home_page.dart';
 import 'pages/login_page.dart';
@@ -45,6 +46,7 @@ class StitchApp extends StatelessWidget {
         SelfieManagementPage.routeName: (_) => const SelfieManagementPage(),
         SavedLooksPage.routeName: (_) => const SavedLooksPage(),
         SettingsPage.routeName: (_) => const SettingsPage(),
+        CitySelectionPage.routeName: (_) => const CitySelectionPage(),
         AboutPage.routeName: (_) => const AboutPage(),
       },
     );

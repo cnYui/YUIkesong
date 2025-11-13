@@ -1,9 +1,41 @@
 import 'package:flutter/material.dart';
+import '../state/city_selection_store.dart';
+import 'city_selection_page.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
   static const routeName = '/settings';
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  @override
+  void initState() {
+    super.initState();
+    // 监听城市选择变化
+    CitySelectionStore().addListener(_onCityChanged);
+  }
+
+  @override
+  void dispose() {
+    CitySelectionStore().removeListener(_onCityChanged);
+    super.dispose();
+  }
+
+  void _onCityChanged() {
+    setState(() {});
+  }
+
+  String _getCityDisplayText() {
+    final store = CitySelectionStore();
+    if (store.hasManualSelection) {
+      return store.selectedCity!.name;
+    }
+    return '自动定位';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,16 +57,24 @@ class SettingsPage extends StatelessWidget {
         child: Column(
           children: [
             _SettingCard(
-              items: const [
-                _SettingItem(
+              items: [
+                const _SettingItem(
                   icon: Icons.language,
                   title: '语言',
                   subtitle: '简体中文',
                 ),
-                _SettingItem(
+                const _SettingItem(
                   icon: Icons.contrast,
                   title: '颜色风格',
                   subtitle: '白色风格',
+                ),
+                _SettingItem(
+                  icon: Icons.location_on,
+                  title: '地区',
+                  subtitle: _getCityDisplayText(),
+                  onTap: () {
+                    Navigator.of(context).pushNamed(CitySelectionPage.routeName);
+                  },
                 ),
               ],
             ),
@@ -98,26 +138,29 @@ class _SettingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          child: Row(
-            children: [
-              Icon(item.icon, color: const Color(0xFF6B7280)),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  item.title,
-                  style: const TextStyle(fontSize: 16, color: Colors.black),
+        InkWell(
+          onTap: item.onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            child: Row(
+              children: [
+                Icon(item.icon, color: const Color(0xFF6B7280)),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    item.title,
+                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                  ),
                 ),
-              ),
-              if (item.subtitle != null)
-                Text(
-                  item.subtitle!,
-                  style: const TextStyle(fontSize: 14, color: Colors.black),
-                ),
-              const SizedBox(width: 8),
-              const Icon(Icons.chevron_right, color: Color(0xFFB0B1B6)),
-            ],
+                if (item.subtitle != null)
+                  Text(
+                    item.subtitle!,
+                    style: const TextStyle(fontSize: 14, color: Colors.black),
+                  ),
+                const SizedBox(width: 8),
+                const Icon(Icons.chevron_right, color: Color(0xFFB0B1B6)),
+              ],
+            ),
           ),
         ),
         if (showDivider)
@@ -133,9 +176,15 @@ class _SettingRow extends StatelessWidget {
 }
 
 class _SettingItem {
-  const _SettingItem({required this.icon, required this.title, this.subtitle});
+  const _SettingItem({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.onTap,
+  });
 
   final IconData icon;
   final String title;
   final String? subtitle;
+  final VoidCallback? onTap;
 }

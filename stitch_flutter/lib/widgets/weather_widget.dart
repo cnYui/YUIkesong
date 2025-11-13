@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:stitch_flutter/services/weather_service.dart';
 import 'package:stitch_flutter/services/location_service.dart';
 import 'package:stitch_flutter/services/auth_service.dart';
+import 'package:stitch_flutter/state/city_selection_store.dart';
 import 'package:stitch_flutter/widgets/weather_icons.dart';
 
 /// 天气显示组件
@@ -79,10 +80,27 @@ class _WeatherWidgetState extends State<WeatherWidget> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _checkAuthAndLoadWeather();
+    // 监听城市选择变化
+    CitySelectionStore().addListener(_onCityChanged);
+  }
+
+  @override
   void dispose() {
-    // 移除监听器
+    // 移除所有监听器
     AuthService().removeListener(_onAuthChanged);
+    CitySelectionStore().removeListener(_onCityChanged);
     super.dispose();
+  }
+
+  /// 城市选择变化回调
+  void _onCityChanged() {
+    // 如果用户选择了新城市，重新加载天气
+    if (AuthService().isAuthenticated) {
+      _loadWeather();
+    }
   }
 
   /// 加载天气数据（仅在登录后调用）
@@ -99,9 +117,19 @@ class _WeatherWidgetState extends State<WeatherWidget> {
         _errorMessage = '';
       });
 
-      // 1. 获取用户城市
-      final city = await LocationService.getCityByIP();
-      print('📍 当前城市: ${city.name} (${city.adcode})');
+      // 1. 获取用户城市（优先使用手动选择的城市）
+      final cityStore = CitySelectionStore();
+      CityInfo city;
+      
+      if (cityStore.hasManualSelection) {
+        // 使用用户手动选择的城市
+        city = cityStore.selectedCity!;
+        print('📍 使用用户选择的城市: ${city.name} (${city.adcode})');
+      } else {
+        // 使用IP定位
+        city = await LocationService.getCityByIP();
+        print('📍 使用IP定位的城市: ${city.name} (${city.adcode})');
+      }
 
       // 2. 获取天气信息
       final weather = await WeatherService.getRealTimeWeather(city.adcode);
@@ -320,6 +348,8 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
   void initState() {
     super.initState();
     _checkAuthAndLoadWeather();
+    // 监听城市选择变化
+    CitySelectionStore().addListener(_onCityChanged);
   }
 
   void _checkAuthAndLoadWeather() {
@@ -357,9 +387,16 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
     }
   }
 
+  void _onCityChanged() {
+    if (AuthService().isAuthenticated) {
+      _loadWeather();
+    }
+  }
+
   @override
   void dispose() {
     AuthService().removeListener(_onAuthChanged);
+    CitySelectionStore().removeListener(_onCityChanged);
     super.dispose();
   }
 
@@ -369,7 +406,16 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
     }
 
     try {
-      final city = await LocationService.getCityByIP();
+      // 优先使用用户手动选择的城市
+      final cityStore = CitySelectionStore();
+      CityInfo city;
+      
+      if (cityStore.hasManualSelection) {
+        city = cityStore.selectedCity!;
+      } else {
+        city = await LocationService.getCityByIP();
+      }
+      
       final weather = await WeatherService.getRealTimeWeather(city.adcode);
 
       if (mounted) {
