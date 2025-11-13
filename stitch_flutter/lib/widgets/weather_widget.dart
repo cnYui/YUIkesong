@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stitch_flutter/services/weather_service.dart';
 import 'package:stitch_flutter/services/location_service.dart';
+import 'package:stitch_flutter/services/auth_service.dart';
 import 'package:stitch_flutter/widgets/weather_icons.dart';
 
 /// 天气显示组件
@@ -26,15 +27,72 @@ class _WeatherWidgetState extends State<WeatherWidget> {
   CityInfo? _cityInfo;
   bool _isLoading = true;
   String _errorMessage = '';
+  bool _hasCheckedAuth = false;
 
   @override
   void initState() {
     super.initState();
-    _loadWeather();
+    _checkAuthAndLoadWeather();
   }
 
-  /// 加载天气数据
+  /// 检查登录状态并加载天气
+  void _checkAuthAndLoadWeather() {
+    final authService = AuthService();
+    
+    // 如果已登录，直接加载天气
+    if (authService.isAuthenticated) {
+      _loadWeather();
+      return;
+    }
+
+    // 如果未登录，监听登录状态变化
+    authService.addListener(_onAuthChanged);
+    
+    // 首次检查时，如果未登录，显示未登录状态
+    if (!_hasCheckedAuth) {
+      _hasCheckedAuth = true;
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  /// 登录状态变化回调
+  void _onAuthChanged() {
+    final authService = AuthService();
+    
+    if (authService.isAuthenticated && _weatherInfo == null) {
+      // 用户刚登录，开始加载天气
+      _loadWeather();
+    } else if (!authService.isAuthenticated) {
+      // 用户登出，清空天气信息
+      if (mounted) {
+        setState(() {
+          _weatherInfo = null;
+          _cityInfo = null;
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    // 移除监听器
+    AuthService().removeListener(_onAuthChanged);
+    super.dispose();
+  }
+
+  /// 加载天气数据（仅在登录后调用）
   Future<void> _loadWeather() async {
+    // 再次检查登录状态
+    if (!AuthService().isAuthenticated) {
+      print('⚠️ 用户未登录，跳过天气加载');
+      return;
+    }
+
     try {
       setState(() {
         _isLoading = true;
@@ -71,15 +129,63 @@ class _WeatherWidgetState extends State<WeatherWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return _buildLoading();
-    }
+    // 使用 AnimatedBuilder 监听登录状态变化
+    return AnimatedBuilder(
+      animation: AuthService(),
+      builder: (context, _) {
+        // 检查登录状态
+        final isAuthenticated = AuthService().isAuthenticated;
+        
+        // 如果未登录，显示占位符
+        if (!isAuthenticated) {
+          return _buildPlaceholder();
+        }
 
-    if (_weatherInfo == null) {
-      return _buildError();
-    }
+        // 如果正在加载
+        if (_isLoading) {
+          return _buildLoading();
+        }
 
-    return _buildWeatherDisplay();
+        // 如果加载失败
+        if (_weatherInfo == null) {
+          return _buildError();
+        }
+
+        // 显示天气信息
+        return _buildWeatherDisplay();
+      },
+    );
+  }
+
+  /// 构建未登录占位符
+  Widget _buildPlaceholder() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.location_on_outlined,
+            size: widget.iconSize * 0.5,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '登录后查看天气',
+            style: widget.textStyle?.copyWith(
+              color: Colors.grey[500],
+            ) ?? TextStyle(
+              fontSize: 14,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// 构建加载状态
@@ -208,14 +314,60 @@ class CompactWeatherWidget extends StatefulWidget {
 class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
   WeatherInfo? _weatherInfo;
   bool _isLoading = true;
+  bool _hasCheckedAuth = false;
 
   @override
   void initState() {
     super.initState();
-    _loadWeather();
+    _checkAuthAndLoadWeather();
+  }
+
+  void _checkAuthAndLoadWeather() {
+    final authService = AuthService();
+    
+    if (authService.isAuthenticated) {
+      _loadWeather();
+      return;
+    }
+
+    authService.addListener(_onAuthChanged);
+    
+    if (!_hasCheckedAuth) {
+      _hasCheckedAuth = true;
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _onAuthChanged() {
+    final authService = AuthService();
+    
+    if (authService.isAuthenticated && _weatherInfo == null) {
+      _loadWeather();
+    } else if (!authService.isAuthenticated) {
+      if (mounted) {
+        setState(() {
+          _weatherInfo = null;
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    AuthService().removeListener(_onAuthChanged);
+    super.dispose();
   }
 
   Future<void> _loadWeather() async {
+    if (!AuthService().isAuthenticated) {
+      return;
+    }
+
     try {
       final city = await LocationService.getCityByIP();
       final weather = await WeatherService.getRealTimeWeather(city.adcode);
@@ -237,39 +389,59 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading || _weatherInfo == null) {
-      return SizedBox(
-        width: widget.size,
-        height: widget.size,
-        child: const Center(
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      );
-    }
+    // 使用 AnimatedBuilder 监听登录状态变化
+    return AnimatedBuilder(
+      animation: AuthService(),
+      builder: (context, _) {
+        final isAuthenticated = AuthService().isAuthenticated;
+        
+        if (!isAuthenticated) {
+          return SizedBox(
+            width: widget.size,
+            height: widget.size,
+            child: Icon(
+              Icons.location_off,
+              size: widget.size * 0.4,
+              color: Colors.grey[400],
+            ),
+          );
+        }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        WeatherIcon(
-          type: _weatherInfo!.weatherType,
-          size: widget.size * 0.6,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '${_weatherInfo!.temperature}°',
-          style: TextStyle(
-            fontSize: widget.size * 0.2,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          _weatherInfo!.weather,
-          style: TextStyle(
-            fontSize: widget.size * 0.15,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
+        if (_isLoading || _weatherInfo == null) {
+          return SizedBox(
+            width: widget.size,
+            height: widget.size,
+            child: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        }
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            WeatherIcon(
+              type: _weatherInfo!.weatherType,
+              size: widget.size * 0.6,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${_weatherInfo!.temperature}°',
+              style: TextStyle(
+                fontSize: widget.size * 0.2,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              _weatherInfo!.weather,
+              style: TextStyle(
+                fontSize: widget.size * 0.15,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
