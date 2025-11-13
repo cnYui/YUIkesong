@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import '../state/current_recommendation_store.dart';
 import '../theme/app_theme.dart';
 import '../widgets/stitch_bottom_nav.dart';
+import '../widgets/weather_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -89,25 +90,7 @@ class _HomePageState extends State<HomePage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.location_on, color: Color(0xFF6C6C70)),
-                        const SizedBox(width: 8),
-                        Text(
-                          '上海',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF2D2D2F),
-                            letterSpacing: -0.15,
-                          ),
-                        ),
-                        const Spacer(),
-                      ],
-                    ),
-                  ),
+                  // 位置信息已集成到天气组件中，这里可以移除或保留作为备用
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -128,46 +111,16 @@ class _HomePageState extends State<HomePage>
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF0F8FA),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  '25°C，局部多云',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1F1F21),
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  '今天穿一件轻薄外套最合适！',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF6C6C70),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(
-                            Icons.cloud_outlined,
-                            size: 48,
-                            color: StitchColors.primary,
-                          ),
-                        ],
+                  // 动态天气显示组件
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: WeatherWidget(
+                      showCityName: true,
+                      iconSize: 48.0,
+                      textStyle: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F1F21),
                       ),
                     ),
                   ),

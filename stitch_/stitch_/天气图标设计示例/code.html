@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Weather Icons</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#00C2FF", // A bright blue from the reference icon
+            "background-light": "#FFFFFF",
+            "background-dark": "#121212",
+          },
+          fontFamily: {
+            display: ["Noto Sans SC", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "1rem", // 16px
+          },
+        },
+      },
+    };
+  </script>
+<style type="text/tailwindcss">
+    .stroke-primary { stroke: #00C2FF; }
+    .stroke-yellow-400 { stroke: #FBBF24; }
+    .fill-primary { fill: #00C2FF; }
+    .fill-yellow-400 { fill: #FBBF24; }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="min-h-screen flex items-center justify-center p-4">
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-8">
+<div class="flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-sm w-48 h-48">
+<div class="w-24 h-24">
+<svg aria-hidden="true" fill="none" role="img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<circle class="stroke-yellow-400" cx="50" cy="50" r="18" stroke-width="6"></circle>
+<line class="stroke-yellow-400" stroke-linecap="round" stroke-width="6" x1="50" x2="50" y1="20" y2="8"></line>
+<line class="stroke-yellow-400" stroke-linecap="round" stroke-width="6" x1="50" x2="50" y1="92" y2="80"></line>
+<line class="stroke-yellow-400" stroke-linecap="round" stroke-width="6" x1="20" x2="8" y1="50" y2="50"></line>
+<line class="stroke-yellow-400" stroke-linecap="round" stroke-width="6" x1="92" x2="80" y1="50" y2="50"></line>
+<line class="stroke-yellow-400" stroke-linecap="round" stroke-width="6" x1="32.22" x2="23.73" y1="32.22" y2="23.73"></line>
+<line class="stroke-yellow-400" stroke-linecap="round" stroke-width="6" x1="76.27" x2="67.78" y1="76.27" y2="67.78"></line>
+<line class="stroke-yellow-400" stroke-linecap="round" stroke-width="6" x1="32.22" x2="23.73" y1="67.78" y2="76.27"></line>
+<line class="stroke-yellow-400" stroke-linecap="round" stroke-width="6" x1="76.27" x2="67.78" y1="23.73" y2="32.22"></line>
+</svg>
+</div>
+<p class="mt-4 font-medium text-lg text-gray-700 dark:text-gray-300">晴天</p>
+</div>
+<div class="flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-sm w-48 h-48">
+<div class="w-24 h-24">
+<svg aria-hidden="true" fill="none" role="img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<path class="stroke-primary" d="M73.5 61.5C82.5 61.5 90 54 90 45C90 36 82.5 28.5 73.5 28.5C73.5 19.5 66 12 57 12C49.5 12 43.5 18 42 25.5C40.5 24 37.5 22.5 34.5 22.5C28.5 22.5 24 27 24 33C24 33.75 24.15 34.5 24.3 35.25C18.45 37.05 15 42.45 15 48.75C15 55.65 20.85 61.5 27.75 61.5H73.5Z" stroke-linejoin="round" stroke-width="6"></path>
+</svg>
+</div>
+<p class="mt-4 font-medium text-lg text-gray-700 dark:text-gray-300">多云</p>
+</div>
+<div class="flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-sm w-48 h-48">
+<div class="w-24 h-24">
+<svg aria-hidden="true" fill="none" role="img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<path class="stroke-primary" d="M73.5 61.5C82.5 61.5 90 54 90 45C90 36 82.5 28.5 73.5 28.5C73.5 19.5 66 12 57 12C49.5 12 43.5 18 42 25.5C40.5 24 37.5 22.5 34.5 22.5C28.5 22.5 24 27 24 33C24 33.75 24.15 34.5 24.3 35.25C18.45 37.05 15 42.45 15 48.75C15 55.65 20.85 61.5 27.75 61.5H73.5Z" stroke-linejoin="round" stroke-width="6"></path>
+<circle class="fill-primary" cx="40" cy="78" r="4"></circle>
+<circle class="fill-primary" cx="60" cy="78" r="4"></circle>
+</svg>
+</div>
+<p class="mt-4 font-medium text-lg text-gray-700 dark:text-gray-300">下雨</p>
+</div>
+<div class="flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-sm w-48 h-48">
+<div class="w-24 h-24">
+<svg aria-hidden="true" fill="none" role="img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<path class="stroke-primary" d="M73.5 61.5C82.5 61.5 90 54 90 45C90 36 82.5 28.5 73.5 28.5C73.5 19.5 66 12 57 12C49.5 12 43.5 18 42 25.5C40.5 24 37.5 22.5 34.5 22.5C28.5 22.5 24 27 24 33C24 33.75 24.15 34.5 24.3 35.25C18.45 37.05 15 42.45 15 48.75C15 55.65 20.85 61.5 27.75 61.5H73.5Z" stroke-linejoin="round" stroke-width="6"></path>
+<line class="stroke-primary" stroke-linecap="round" stroke-width="5" x1="40" x2="40" y1="72" y2="86"></line>
+<line class="stroke-primary" stroke-linecap="round" stroke-width="5" x1="33" x2="47" y1="79" y2="79"></line>
+<line class="stroke-primary" stroke-linecap="round" stroke-width="5" x1="35" x2="45" y1="74" y2="84"></line>
+<line class="stroke-primary" stroke-linecap="round" stroke-width="5" x1="45" x2="35" y1="74" y2="84"></line>
+<line class="stroke-primary" stroke-linecap="round" stroke-width="5" x1="60" x2="60" y1="72" y2="86"></line>
+<line class="stroke-primary" stroke-linecap="round" stroke-width="5" x1="53" x2="67" y1="79" y2="79"></line>
+<line class="stroke-primary" stroke-linecap="round" stroke-width="5" x1="55" x2="65" y1="74" y2="84"></line>
+<line class="stroke-primary" stroke-linecap="round" stroke-width="5" x1="65" x2="55" y1="74" y2="84"></line>
+</svg>
+</div>
+<p class="mt-4 font-medium text-lg text-gray-700 dark:text-gray-300">下雪</p>
+</div>
+</div>
+</div>
+
+</body></html>
