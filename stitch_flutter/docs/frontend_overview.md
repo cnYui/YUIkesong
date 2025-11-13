@@ -21,6 +21,7 @@
   - `SavedLooksPage`（我保存的穿搭）
   - `SettingsPage`（设置）
   - `AboutPage`（关于我们）
+  - `PostDetailPage`（帖子详情）
 - 通过 `Navigator.pushNamed` 进入子页面；`StitchShellCoordinator` 提供跨页面切换 tab 的能力（例如首页跳转 AI 试穿室）。
 
 ## 4. 页面功能明细
@@ -62,6 +63,9 @@
   - 主结果图
   - 下方衣物列表（<=2 张平铺；>2 张横向滚动）
 - AppBar 底部增加说明文字。
+- 支持真实发布到社区：勾选后点击底部“发布社区”，将所选穿搭发布到社区流（左列顶部）；发布的帖子图片顺序为“穿搭结果图”后紧跟“所含衣物大图”。
+
+
 
 ### 4.6 管理我的自拍 (`lib/pages/selfie_management_page.dart`)
 - 单选机制，选中头像右上角出现黑色勾选，只允许同时选一张。
@@ -78,12 +82,21 @@
    - 保存到衣柜 按钮黑底白字、圆角与 AI 试穿室一致
    - 点击后返回衣柜页
 
+### 4.9 帖子详情页 (`lib/pages/post_detail_page.dart`)
+- 顶部居中标题，左侧返回按钮（`Navigator.maybePop()`）。
+- 主体图片：
+  - `PageView` 多图滑动，图片来源为发布的穿搭合成图（封面）+ 衣物图片（大图）。
+  - 图片圆角统一为 `20`（与衣柜页面一致）。
+- 进度指示点：与 AI 试穿室一致（选中黑色、未选中灰色，宽度 12/8，圆角 999）。
+- 作者信息与操作区（点赞/评论/分享占位）。
+
 ## 5. 状态管理
 | Store | 文件 | 说明 | 后端对接建议 |
 | --- | --- | --- | --- |
 | `SavedLooksStore` | `lib/state/saved_looks_store.dart` | 维护用户保存的穿搭列表（`ValueNotifier<List<SavedLook>>`） | 后续可替换为调用后端接口并缓存 |
 | `WardrobeSelectionStore` | `lib/state/wardrobe_selection_store.dart` | 记录衣柜当前选中衣物（索引 + 图片） | 提供给 AI 试穿室使用，后端可同步选中状态 |
 | `CurrentRecommendationStore` | `lib/state/current_recommendation_store.dart` | 存储首页传入的推荐搭配 | 用于在 AI 试穿室直接保存推荐组合 |
+| `CommunityPostsStore` | `lib/state/community_posts_store.dart` | 社区帖子内存列表（新发布的穿搭追加进来，社区页左列监听并渲染） | 可替换为真实社区接口 + 本地缓存 |
 
 数据保存目前全部在前端内存中，便于后端后续接管。
 
@@ -95,6 +108,7 @@
 | 我的衣柜 | 本地模拟数据 | 衣物列表、分类、搜索、筛选结果 |
 | AI 试穿 | 静态示例图 | 上传自拍、衣服组合、生成图片/视频结果、任务状态 |
 | 保存穿搭 | 前端内存 | 保存穿搭记录、查询历史、删除等 |
+| 社区发布/列表/详情 | 前端内存（`CommunityPostsStore`） | 发布帖子（图片数组：封面+衣物）、分页列表、帖子详情（含图片序列与作者信息） |
 | 自拍管理 | 本地示例图 | 用户自拍列表、上传/删除接口 |
 | 添加衣物 | 使用 `image_picker` 获取本地图片 | 上传衣物图片、识别结果、生成属性 |
 
@@ -107,6 +121,15 @@ class SavedLook {
   final String resultImage;   // AI 生成图 URL
   final List<String> clothingImages; // 搭配中的衣服图片
   final DateTime timestamp;
+}
+```
+
+```dart
+class CommunityPostData {
+  final String id;              // 关联发布来源（如 saved_looks.id）或后端生成
+  final List<String> images;    // 图片序列：封面（合成图） + 衣物（大图）
+  final String username;        // 作者昵称
+  final String avatar;          // 作者头像（或封面图）
 }
 ```
 
@@ -132,9 +155,15 @@ class WardrobeItem {
    - 进入处理中页  自动延迟 1 秒  保存页
    - 点击 `保存到衣柜`  返回衣柜并保持原状态
 
+4. **保存穿搭 → 发布社区 → 详情页**
+   - 在“我保存的穿搭”勾选卡片，点击“发布社区”
+   - 将该穿搭作为社区帖子追加到社区页左列顶部，图片顺序为：封面（合成图）→ 衣物（大图）
+   - 点击帖子进入详情页，`PageView` 按上述顺序滑动，底部指示点随当前索引更新
+
 ## 9. 多语言与主题
 - 多语言目前仅展示静态文案；后端若需国际化，可提供标准化字典或配置。
 - 主题为浅色系，核心色值集中在 `StitchColors`（见 `app_theme.dart`），后端无需关注。
+- UI 统一：社区与衣柜图片圆角统一为 `20`。
 
 ## 10. 集成建议
 1. **网络层**：
@@ -263,3 +292,69 @@ CREATE TABLE selfies (
 - `saved_looks` 可以记录来源（推荐/自主搭配），便于后端统计与运营分析。
 
 如需更多细节，可参考对应文件中的实现。如果后端接口已确定，欢迎同步字段/流程，我们可继续调整前端逻辑以适配。
+
+---
+
+## 附录 A：页面与路由速查
+- `lib/pages/home_page.dart`（首页，底部导航 variant：home）
+- `lib/pages/wardrobe_page.dart`（我的衣柜，variant：wardrobe）
+- `lib/pages/community_page.dart`（社区，variant：community）
+- `lib/pages/ai_fitting_room_page.dart`（AI试穿室，variant：fittingRoom）
+- `lib/pages/profile_page.dart`（我的，variant：profile）
+- `lib/pages/saved_looks_page.dart`（`routeName: /saved-looks`）
+- `lib/pages/selfie_management_page.dart`（`routeName: /selfie-management`）
+- `lib/pages/settings_page.dart`（`routeName: /settings`）
+- `lib/pages/about_page.dart`（`routeName: /about`）
+- `lib/pages/post_detail_page.dart`（`routeName: /post-detail`，也支持 `MaterialPageRoute` 直接传参）
+- 认证：`lib/pages/login_page.dart`（`/login`）、`lib/pages/register_page.dart`（`/register`）、`lib/pages/reset_password_page.dart`（`/reset-password`）
+- 添加衣物流程：`add_clothing_processing_page.dart`（`/add-clothing-processing`）、`add_clothing_save_page.dart`（`/add-clothing-save`）
+
+## 附录 B：社区页面补充说明
+- 顶部标题居中与搜索图标；推荐/关注 Tab 切换，选中态下划线。
+- 左右两列瀑布流：右列整体下移约 10% 形成错落。
+- 帖子卡片：图片圆角 `20`、作者头像与昵称；点击进入详情页。
+- 动态发布：左列顶部优先展示用户刚从“我保存的穿搭”页发布到社区的帖子（监听 `CommunityPostsStore`）。
+
+## 附录 C：接口契约（REST 举例）
+- Auth
+  - `POST /auth/login`：`{ email/phone, password }` → `{ token, user: { id, nickname, avatar_url } }`
+  - `POST /auth/register`：`{ email, password, nickname }` → `{ id }`
+  - `POST /auth/reset`：`{ email }` 或 `{ token, new_password }`
+- Profiles
+  - `GET /users/me` → `{ id, nickname, avatar_url, city }`
+  - `PUT /users/me`：更新资料
+- Wardrobe
+  - `GET /wardrobe/categories` → `[{ id, name, icon }]`
+  - `GET /wardrobe/items?page=&pageSize=` → `[{ id, image_url, category_id, color, season }]`
+  - `POST /wardrobe/items`：上传衣物图片后写入属性 → `{ id }`
+  - `DELETE /wardrobe/items/{id}`
+- AI 任务
+  - `POST /ai/tasks`：`{ task_type: 'image'|'video', selfie_url, clothing_image_urls: [] }` → `{ id, status: 'pending' }`
+  - `GET /ai/tasks/{id}` → `{ status, result_url }`
+- Saved Looks
+  - `POST /saved-looks`：`{ cover_image_url, clothing_image_urls: [] }` → `{ id }`
+  - `GET /saved-looks?page=&pageSize=` → 列表
+  - `DELETE /saved-looks/{id}`
+- Community
+  - `POST /community/posts`：`{ images: [cover, ...clothing], description?, visibility }` → `{ id }`
+  - `GET /community/posts?page=&pageSize=` → `[{ id, cover_image_url, username, avatar }]`
+  - `GET /community/posts/{id}` → `{ id, images: [], username, avatar, description }`
+  - `POST /community/posts/{id}/likes`、`GET /community/posts/{id}/comments`、`POST /community/posts/{id}/comments`
+
+## 附录 D：分页与错误约定
+- 分页统一使用 `page`（从 1 开始）、`pageSize`；返回 `{ list: [], page, pageSize, total }`
+- 错误返回统一 `{ code, message }`；网络层建议 `dio` 拦截器将常见错误翻译为可读文案。
+
+## 附录 E：状态订阅点
+- 社区页左列通过 `ValueListenableBuilder` 订阅 `CommunityPostsStore.listenable`，将动态帖子拼接到推荐流顶部。
+- AI 试穿室与衣柜页通过 Store 共享数据，确保保存/生成流程的图片一致性。
+
+## 附录 F：Supabase 映射（可选）
+- `profiles` ↔ `auth.users`，`wardrobe_items/categories`，`recommendations/recommendation_items`，`ai_tasks`，`saved_looks/saved_look_items`，`community_*` 系列。
+- RLS 策略：所有包含 `user_id` 的表 `user_id = auth.uid()`；社区公开读，写入受作者约束。
+- Storage Buckets：`selfies`、`wardrobe`、`saved_looks`、`community`（私有 + 签名 URL，社区封面可公开）。
+
+## 附录 G：运行与环境
+- 开发运行：`flutter pub get`；Web：`flutter run -d chrome`；Windows：`flutter run -d windows`
+- 环境变量（dart-define）：`API_BASE_URL` 或 `SUPABASE_URL`/`SUPABASE_ANON_KEY`
+- 图片加载：建议使用 `cached_network_image`，统一占位与错误样式；弱网场景体验平滑。

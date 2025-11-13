@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../models/stitch_tab.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/stitch_bottom_nav.dart';
 import 'about_page.dart';
@@ -24,6 +26,67 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage>
     with AutomaticKeepAliveClientMixin {
+  String? _defaultAvatarUrl;
+  bool _isLoadingAvatar = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // 初始状态设置为未加载
+    _isLoadingAvatar = false;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 当页面可见且用户已登录时加载头像
+    if (ApiService.isAuthenticated && _defaultAvatarUrl == null && !_isLoadingAvatar) {
+      _loadDefaultAvatar();
+    }
+  }
+
+  Future<void> _loadDefaultAvatar() async {
+    if (!ApiService.isAuthenticated) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingAvatar = true;
+    });
+
+    try {
+      final response = await ApiService.getSelfies();
+      final List<dynamic> selfieList = response['list'] ?? [];
+      
+      if (selfieList.isEmpty) {
+        setState(() {
+          _defaultAvatarUrl = null;
+          _isLoadingAvatar = false;
+        });
+        return;
+      }
+
+      // 查找默认自拍
+      final defaultSelfie = selfieList.firstWhere(
+        (selfie) => selfie['is_default'] == true,
+        orElse: () => selfieList[0], // 如果没有默认的，使用第一个
+      );
+
+      if (mounted) {
+        setState(() {
+          _defaultAvatarUrl = defaultSelfie['image_url'] ?? defaultSelfie['image_path'];
+          _isLoadingAvatar = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingAvatar = false;
+        });
+      }
+    }
+  }
+
   static const _shortcuts = [
     _ProfileShortcut(
       label: '管理我的自拍',
@@ -51,7 +114,17 @@ class _ProfilePageState extends State<ProfilePage>
   ];
 
   void _openRoute(String route) {
-    Navigator.of(context).pushNamed(route);
+    Navigator.of(context).pushNamed(route).then((_) {
+      // 从自拍管理页面返回时重新加载头像
+      if (route == SelfieManagementPage.routeName) {
+        // 延迟一下确保数据已更新
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted && ApiService.isAuthenticated) {
+            _loadDefaultAvatar();
+          }
+        });
+      }
+    });
   }
 
   @override
@@ -86,26 +159,55 @@ class _ProfilePageState extends State<ProfilePage>
                         Container(
                           height: 80,
                           width: 80,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            image: DecorationImage(
-                              fit: BoxFit.cover,
-                              image: NetworkImage(
-                                'https://lh3.googleusercontent.com/aida-public/AB6AXuCeBnG-RJYwReA5PdBj2L8GdRunsfgcsYD-XIsWsHttDb89yxpuCuVu8s-QzQkLMX7mfFQLcW73EoaoTpVDU5woG4xjO7jvZmWUAx34yTlV4clAYYdC7xAwrZNSUR6w2g5BndIktVmiBEcXSfHgPl380QrVIuIgx7IW9432fOfndtFwyUCD3U1c-c2tOScs7bIpO673mVlHEr3Db58xFuL1pqF5mz--93cgR-l7WQHHDH9NxScg_S2io9-nEKeH89mWqHq_LZvAg08',
-                              ),
-                            ),
+                            color: Colors.grey[300],
                           ),
+                          child: _isLoadingAvatar
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                                  ),
+                                )
+                              : _defaultAvatarUrl != null
+                                  ? ClipOval(
+                                      child: Image.network(
+                                        _defaultAvatarUrl!,
+                                        fit: BoxFit.cover,
+                                        width: 80,
+                                        height: 80,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Icon(
+                                            Icons.person,
+                                            size: 40,
+                                            color: Colors.grey,
+                                          );
+                                        },
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.person,
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
                         ),
                         const SizedBox(width: 16),
-                        const Expanded(
-                          child: Text(
-                            '时尚达人小王',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.15,
-                              color: StitchColors.textPrimary,
-                            ),
+                        Expanded(
+                          child: AnimatedBuilder(
+                            animation: AuthService(),
+                            builder: (context, _) {
+                              final nickname = AuthService().nickname ?? '时尚达人';
+                              return Text(
+                                nickname,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.15,
+                                  color: StitchColors.textPrimary,
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/stitch_tab.dart';
+import '../services/api_service.dart';
 import '../state/current_recommendation_store.dart';
 import '../state/saved_looks_store.dart';
 import '../state/wardrobe_selection_store.dart';
@@ -250,26 +251,71 @@ class _AiFittingRoomPageState extends State<AiFittingRoomPage>
     );
   }
 
-  void _saveLook() {
-    // 获取用户选择的衣服图片列表
-    final selectedClothingImages = _getSelectedClothingImages();
+  void _saveLook() async {
+    try {
+      // 获取用户选择的衣服图片列表
+      final selectedClothingImages = _getSelectedClothingImages();
+      
+      if (selectedClothingImages.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('请先选择要保存的衣服'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
 
-    final look = SavedLook(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      resultImage: _generatedImages[_currentImageIndex],
-      clothingImages: selectedClothingImages,
-      timestamp: DateTime.now(),
-    );
+      // 显示加载状态
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('正在保存穿搭...'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
 
-    SavedLooksStore.addLook(look);
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('已保存到我的穿搭'),
-          duration: Duration(seconds: 2),
-        ),
+      // 调用后端API保存穿搭
+      final response = await ApiService.createSavedLook(
+        coverImageUrl: _generatedImages[_currentImageIndex],
+        clothingImageUrls: selectedClothingImages,
       );
+
+      if (response['id'] != null) {
+        // 本地也保存一份，用于即时显示
+        final look = SavedLook(
+          id: response['id'],
+          resultImage: _generatedImages[_currentImageIndex],
+          clothingImages: selectedClothingImages,
+          timestamp: DateTime.now(),
+        );
+        SavedLooksStore.addLook(look);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('穿搭已保存成功！'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        throw Exception('保存失败：服务器未返回ID');
+      }
+    } catch (e) {
+      print('保存穿搭失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('保存穿搭失败: ${e.toString()}'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -286,11 +332,8 @@ class _AiFittingRoomPageState extends State<AiFittingRoomPage>
       return wardrobeImages;
     }
 
-    // 优先级3: 如果都没有,返回默认图片
-    return const [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuApweC_IRzecAv0S0RzevdL2C4LpmEH8lxnRpYmTwNHgXBFs1YxYahW5f5xjumsq6H6r9LZ92isNkaNDBtbzoSJvKMDGc5JxZyteXjzR54ZIidnq2Niwv1492BdIDczcbcRRw_IAGmi_TfrBn3ke-RCX-O9siCEcEkmENofPwr7bACoCERZJqE4dVlv6Ha3VlnQpd7iMxRZqF4B66iQeVSqCUXdPIvnqk4ncAgEOLu5tlQm65edTkyhDTDbvOUdysLs91-6I6Eu6zU',
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBc4BKS_D8IMC1vgVyjwjEF-FZJsTd-pu8kr-rinUcXUr-rDoSMU2wWwHZnfHK39KMcOR5OGkgra8VyBT8zdP2hC82FBOSv-yYogLwNEne9lQdGzasE21pF8B5yf48oSAPj-JpdA1f6UZiHKzM7cFjBzfG5jSCLsNK4giFmdryxUH5U4M8782DmHG4UwQSNrtNlQvvtHiXUiFmkK81lLg-3UmzCZpFCtUwAzU9Qye-8eRdN619f6xD10p0rOnTvpV7VCX1itw3HueI',
-    ];
+    // 如果没有选择任何衣物，返回空列表
+    return [];
   }
 
   @override

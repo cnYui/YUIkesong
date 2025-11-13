@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../services/api_service.dart';
 import '../state/saved_looks_store.dart';
+import '../state/community_posts_store.dart';
 
 class SavedLooksPage extends StatefulWidget {
   const SavedLooksPage({super.key});
@@ -13,6 +15,102 @@ class SavedLooksPage extends StatefulWidget {
 
 class _SavedLooksPageState extends State<SavedLooksPage> {
   final Set<String> _selectedIds = <String>{};
+  bool _isLoading = true;
+  String? _error;
+  int _currentPage = 1;
+  static const int _pageSize = 20;
+  bool _hasMore = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // 使用addPostFrameCallback避免在构建过程中调用setState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 进入页面时先清空本地数据，避免重复显示
+      SavedLooksStore.clearAll();
+      _loadSavedLooks(isRefresh: true);
+    });
+  }
+
+  Future<void> _loadSavedLooks({bool isRefresh = false}) async {
+    if (isRefresh) {
+      if (mounted) {
+        setState(() {
+          _currentPage = 1;
+          _hasMore = true;
+          _error = null;
+        });
+      }
+    }
+
+    if (!_hasMore && !isRefresh) return;
+
+    try {
+      if (mounted) {
+        setState(() => _isLoading = true);
+      }
+      
+      final response = await ApiService.getSavedLooks(
+        page: _currentPage,
+        pageSize: _pageSize,
+      );
+
+      final List<dynamic> items = response['list'] ?? [];
+      final int total = response['total'] ?? 0;
+
+      // 将后端数据转换为本地SavedLook对象
+      final List<SavedLook> looks = items.map((item) {
+        final List<String> clothingImagePaths = 
+            (item['clothing_image_urls'] as List<dynamic>?)
+                ?.cast<String>() ?? [];
+        
+        print('穿搭 ${item['id']} 的衣物图片路径: $clothingImagePaths');
+        
+        return SavedLook(
+          id: item['id'].toString(),
+          resultImage: item['cover_image_url'] ?? '',
+          clothingImages: clothingImagePaths,
+          timestamp: DateTime.parse(item['created_at'] ?? DateTime.now().toIso8601String()),
+        );
+      }).toList();
+
+      // 更新本地存储
+      if (isRefresh) {
+        SavedLooksStore.clearAll();
+      }
+      
+      for (final look in looks) {
+        SavedLooksStore.addLook(look);
+      }
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasMore = items.length == _pageSize;
+          if (!isRefresh && items.length == _pageSize) {
+            _currentPage++;
+          }
+        });
+      }
+
+    } catch (e) {
+      print('加载保存穿搭失败: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _error = e.toString();
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('加载失败: ${e.toString()}'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +132,38 @@ class _SavedLooksPageState extends State<SavedLooksPage> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.black87),
+            onPressed: () => _loadSavedLooks(isRefresh: true),
+          ),
+        ],
       ),
       body: ValueListenableBuilder<List<SavedLook>>(
         valueListenable: SavedLooksStore.listenable,
         builder: (context, looks, _) {
+          if (_isLoading && looks.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (_error != null && looks.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text('加载失败: $_error', style: const TextStyle(color: Colors.red)),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => _loadSavedLooks(isRefresh: true),
+                    child: const Text('重试'),
+                  ),
+                ],
+              ),
+            );
+          }
+
           final existingIds = looks.map((look) => look.id).toSet();
           if (looks.isEmpty) {
             return Padding(
@@ -71,95 +197,167 @@ class _SavedLooksPageState extends State<SavedLooksPage> {
               .where((look) => _selectedIds.contains(look.id))
               .toList(growable: false);
 
-          return Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 8),
-                    const Text(
-                      '浏览并管理你保存的穿搭组合，随时重新查看灵感。',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
-                    ),
-                    const SizedBox(height: 24),
-                    Expanded(
-                      child: GridView.builder(
-                        itemCount: looks.length,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 16,
-                              crossAxisSpacing: 16,
-                              childAspectRatio: 0.6,
-                            ),
-                        itemBuilder: (context, index) {
-                          final look = looks[index];
-                          final isSelected = _selectedIds.contains(look.id);
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                if (isSelected) {
-                                  _selectedIds.remove(look.id);
-                                } else {
-                                  _selectedIds.add(look.id);
-                                }
-                              });
-                            },
-                            child: _SavedLookCard(
-                              look: look,
-                              isSelected: isSelected,
-                            ),
-                          );
-                        },
+          return RefreshIndicator(
+            onRefresh: () => _loadSavedLooks(isRefresh: true),
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 8),
+                      const Text(
+                        '浏览并管理你保存的穿搭组合，随时重新查看灵感。',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              if (selectedLooks.isNotEmpty)
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: _SelectionBar(
-                    looks: selectedLooks,
-                    onDeletePressed: () => _handleDelete(selectedLooks),
-                    onPublishPressed: () =>
-                        _handlePublish(selectedLooks.length),
-                    onLookTapped: (look) {
-                      setState(() => _selectedIds.remove(look.id));
-                    },
+                      const SizedBox(height: 24),
+                      Expanded(
+                        child: GridView.builder(
+                          itemCount: looks.length + (_hasMore ? 1 : 0),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 16,
+                                crossAxisSpacing: 16,
+                                childAspectRatio: 0.6,
+                              ),
+                          itemBuilder: (context, index) {
+                            if (index == looks.length) {
+                              // 加载更多指示器
+                              if (_isLoading) {
+                                return const Center(child: CircularProgressIndicator());
+                              } else if (_hasMore) {
+                                // 使用addPostFrameCallback避免在构建过程中调用setState
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  _loadSavedLooks(isRefresh: false);
+                                });
+                                return const Center(child: CircularProgressIndicator());
+                              } else {
+                                return const SizedBox.shrink();
+                              }
+                            }
+                            
+                            final look = looks[index];
+                            final isSelected = _selectedIds.contains(look.id);
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  if (isSelected) {
+                                    _selectedIds.remove(look.id);
+                                  } else {
+                                    _selectedIds.add(look.id);
+                                  }
+                                });
+                              },
+                              child: _SavedLookCard(
+                                look: look,
+                                isSelected: isSelected,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-            ],
+                if (selectedLooks.isNotEmpty)
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: _SelectionBar(
+                      looks: selectedLooks,
+                      onDeletePressed: () => _handleDelete(selectedLooks),
+                      onPublishPressed: () =>
+                          _handlePublish(selectedLooks.length),
+                      onLookTapped: (look) {
+                        setState(() => _selectedIds.remove(look.id));
+                      },
+                    ),
+                  ),
+              ],
+            ),
           );
         },
       ),
     );
   }
 
-  void _handleDelete(List<SavedLook> looks) {
+  Future<void> _handleDelete(List<SavedLook> looks) async {
     if (looks.isEmpty) return;
-    for (final look in looks) {
-      SavedLooksStore.removeLook(look.id);
+    
+    try {
+      for (final look in looks) {
+        print('正在删除穿搭: ID=${look.id}, 图片=${look.resultImage}');
+        await ApiService.deleteSavedLook(look.id);
+        SavedLooksStore.removeLook(look.id);
+      }
+      
+      setState(() => _selectedIds.clear());
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('已删除选中的穿搭'), duration: Duration(seconds: 2)),
+        );
+      }
+    } catch (e) {
+      print('删除穿搭失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('删除失败: ${e.toString()}'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
-    setState(() => _selectedIds.clear());
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('已删除选中的穿搭'), duration: Duration(seconds: 2)),
-    );
   }
 
-  void _handlePublish(int count) {
+  Future<void> _handlePublish(int count) async {
     if (count == 0) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('已发布$count 套穿搭到社区（示例）'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    
+    try {
+      final looks = SavedLooksStore.looks
+          .where((l) => _selectedIds.contains(l.id))
+          .toList(growable: false);
+          
+      for (final look in looks) {
+        await ApiService.publishSavedLook(look.id);
+        
+        // 本地也发布到社区
+        final images = [look.resultImage, ...look.clothingImages];
+        CommunityPostsStore.addPost(
+          CommunityPostData(
+            id: look.id,
+            images: images,
+            username: '我保存的穿搭',
+            avatar: look.resultImage,
+          ),
+        );
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('已发布$count 套穿搭到社区'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('发布穿搭失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('发布失败: ${e.toString()}'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 
@@ -190,6 +388,17 @@ class _SavedLookCard extends StatelessWidget {
   final SavedLook look;
   final bool isSelected;
 
+  // 将image_path转换为公开URL
+  String _getImageUrl(String imagePath) {
+    // 如果已经是完整URL，直接返回
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    // 否则构造Supabase公开URL
+    const supabaseUrl = 'https://tbjyhqcazhgcmtbdgwpg.supabase.co';
+    return '$supabaseUrl/storage/v1/object/public/wardrobe/$imagePath';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -202,56 +411,79 @@ class _SavedLookCard extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  look.resultImage,
+                  _getImageUrl(look.resultImage),
                   fit: BoxFit.cover,
                   width: double.infinity,
+                  errorBuilder: (context, error, stackTrace) {
+                    print('封面图片加载失败: ${look.resultImage}, 错误: $error');
+                    return Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                    );
+                  },
                 ),
               ),
             ),
             const SizedBox(height: 8),
             Expanded(
               flex: 1,
-              child: look.clothingImages.length <= 2
-                  ? Row(
-                      children: [
-                        for (var i = 0; i < look.clothingImages.length; i++)
-                          Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                right: i < look.clothingImages.length - 1
-                                    ? 8
-                                    : 0,
+              child: look.clothingImages.isEmpty
+                  ? const SizedBox.shrink()
+                  : look.clothingImages.length <= 2
+                      ? Row(
+                          children: [
+                            for (var i = 0; i < look.clothingImages.length; i++)
+                              Expanded(
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    right: i < look.clothingImages.length - 1
+                                        ? 8
+                                        : 0,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      _getImageUrl(look.clothingImages[i]),
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        print('衣物图片加载失败: ${look.clothingImages[i]}, 错误: $error');
+                                        return Container(
+                                          color: Colors.grey[300],
+                                          child: const Icon(Icons.broken_image, size: 24, color: Colors.grey),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
                               ),
+                          ],
+                        )
+                      : ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: look.clothingImages.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (context, index) {
+                            return AspectRatio(
+                              aspectRatio: 1,
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
                                 child: Image.network(
-                                  look.clothingImages[i],
+                                  _getImageUrl(look.clothingImages[index]),
                                   fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    print('衣物图片加载失败: ${look.clothingImages[index]}, 错误: $error');
+                                    return Container(
+                                      color: Colors.grey[300],
+                                      child: const Icon(Icons.broken_image, size: 24, color: Colors.grey),
+                                    );
+                                  },
                                 ),
                               ),
-                            ),
-                          ),
-                      ],
-                    )
-                  : ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: look.clothingImages.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 8),
-                      itemBuilder: (context, index) {
-                        return AspectRatio(
-                          aspectRatio: 1,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              look.clothingImages[index],
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                            );
+                          },
+                        ),
             ),
           ],
         ),

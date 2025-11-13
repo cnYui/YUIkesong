@@ -124,4 +124,6 @@ class StitchShellCoordinator {
   static void selectTab(StitchTab tab) {
     _tabSetter?.call(tab);
   }
+
+  static bool get isReady => _tabSetter != null;
 }

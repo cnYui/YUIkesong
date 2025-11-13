@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../models/stitch_tab.dart';
+import '../services/auth_service.dart';
 import '../state/current_recommendation_store.dart';
 import '../theme/app_theme.dart';
 import '../widgets/stitch_bottom_nav.dart';
@@ -22,6 +23,18 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin {
+  
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return '早上好';
+    } else if (hour < 18) {
+      return '下午好';
+    } else {
+      return '晚上好';
+    }
+  }
+
   static const _recommendations = [
     _Recommendation(
       title: '休闲街头风',
@@ -98,14 +111,20 @@ class _HomePageState extends State<HomePage>
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      '早上好，Alex',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1F1F21),
-                        letterSpacing: -0.15,
-                      ),
+                    child: AnimatedBuilder(
+                      animation: AuthService(),
+                      builder: (context, _) {
+                        final nickname = AuthService().nickname ?? '用户';
+                        return Text(
+                          '${_getGreeting()}，$nickname',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1F1F21),
+                            letterSpacing: -0.15,
+                          ),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 16),

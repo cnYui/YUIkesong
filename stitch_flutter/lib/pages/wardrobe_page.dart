@@ -5,10 +5,12 @@ import 'package:image_picker/image_picker.dart';
 
 import '../main.dart';
 import '../models/stitch_tab.dart';
+import '../services/api_service.dart';
 import '../state/wardrobe_selection_store.dart';
 import '../theme/app_theme.dart';
 import '../widgets/stitch_bottom_nav.dart';
-import 'add_clothing_processing_page.dart';
+import 'add_clothing_page.dart';
+import 'ai_fitting_room_page.dart';
 
 class WardrobePage extends StatefulWidget {
   const WardrobePage({
@@ -31,91 +33,20 @@ class _WardrobePageState extends State<WardrobePage>
 
   static const _categories = ['全部', '上装', '下装', '连衣裙', '外套', '鞋履', '配饰', '包包'];
 
-  static const _items = [
-    WardrobeItemData(
-      name: '白色T恤',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuApweC_IRzecAv0S0RzevdL2C4LpmEH8lxnRpYmTwNHgXBFs1YxYahW5f5xjumsq6H6r9LZ92isNkaNDBtbzoSJvKMDGc5JxZyteXjzR54ZIidnq2Niwv1492BdIDczcbcRRw_IAGmi_TfrBn3ke-RCX-O9siCEcEkmENofPwr7bACoCERZJqE4dVlv6Ha3VlnQpd7iMxRZqF4B66iQeVSqCUXdPIvnqk4ncAgEOLu5tlQm65edTkyhDTDbvOUdysLs91-6I6Eu6zU',
-      category: '上装',
-    ),
-    WardrobeItemData(
-      name: '蓝色牛仔裤',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuBc4BKS_D8IMC1vgVyjwjEF-FZJsTd-pu8kr-rinUcXUr-rDoSMU2wWwHZnfHK39KMcOR5OGkgra8VyBT8zdP2hC82FBOSv-yYogLwNEne9lQdGzasE21pF8B5yf48oSAPj-JpdA1f6UZiHKzM7cFjBzfG5jSCLsNK4giFmdryxUH5U4M8782DmHG4UwQSNrtNlQvvtHiXUiFmkK81lLg-3UmzCZpFCtUwAzU9Qye-8eRdN619f6xD10p0rOnTvpV7VCX1itw3HueI',
-      category: '下装',
-    ),
-    WardrobeItemData(
-      name: '黑色连衣裙',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuDEY40ebw5io9194H7bDF20RZWQm8Z5XnJm8VZZ5N2J9Ftu3NEFsRLLUmKU9yTlJh-Gwg0tlXvXTX_Y2kBX93ciL1bBEMUbpytNNPig9Zha1ipOhA-KinpMpghpx7qAs4HQPhtnOF8Z3Bo42bSJHy76zXJIB8NO2f8Bh-wpr1qfbPsfYs1iGn6GxL1mj9nHGD75tPYchuXUpJ_7BGmeNvrbubtrgPEwE6ZwbTe0F_fpckcHsiVCHG04X-9y4tVTfV0Y6r_oUjvMCv8',
-      category: '连衣裙',
-    ),
-    WardrobeItemData(
-      name: '运动鞋',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuBPloNa5aNoXRrDpKQ6XS2WIbCE3T5C8XmUuMRpyYS-j95-jwYStDf2Ljgg5a-icm12ypyEPAL-8jFaUcO0W25bZvKD0snBs5mxELx6lsOwZsB8THD2p6HxbMdUY_oMrTzjGZmzsuAvypuLA9cWyRdWw8MhuaXBfcx8pvsnqeZP56p8KDaHEKamDgVJE1fiylCjsShlEbSB2TFJpTiwWukXk64E6ZrlmvkpSnl-EORr7CyytZE3TLVzmoOdg0sa_KxiTmgJnZ6DpHg',
-      category: '鞋履',
-    ),
-    WardrobeItemData(
-      name: '太阳镜',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuA6fVFlsBoQimKoT3s9SniLo-I8P8-zVmLPAi6Np2KiGoruYuUBeZ7L9pqq4OFU6yd0c9rruQ6lbpUGSqZABpDfvWqedmba7cQJAd-0oFSsZXmpXNwj7jlJ5yJHe--GY2pcO7kPNhDKc-bgGxbXIMzdEMSUN-W6JPLzxndubZCkcOjkK9vVMpQJ8Tbj_WxxFFX3SxSuecynD1bBtDxYulrCsRsZTUmrAgJ60FGMSv3swE28-0UssK8xHMj3e8P_02a0b3t9iuSjRB0',
-      category: '配饰',
-    ),
-    WardrobeItemData(
-      name: '手提包',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuB7mykjxnzJyz1m2JQZm5i49X5nUAls9eyn_pYPyP_LLKKYa7XCF0oMU96gwGQBs40FUS0X2tS-RBPekTi-zcJ9ThiSW0uvZG4AYYf0hMJXIZCcIunGxDO3-1EIuIo9OMmzE-u2Y0xPDHl3VvpnYvige-k3v1Ew5D8Qtl1n4b3MedlQHZJdntr7M-MHSOtFBSVfqnuT9eqekzOluNghKszCrsbjBDAHmzKI-YJr5mWqlqsTZQUBaEA0At69gFHjLdQgeTp2Zx0Z_Js',
-      category: '包包',
-    ),
-    WardrobeItemData(
-      name: '条纹衬衫',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuAc8pm5bvbuy7LrXPoX0D-msljlHWuELh8cS-je007GMkKeULCSPVGiCF8n1B363jp92gY-YOcwLBF_FuKHm9s-8C-2_LLPeoi13Q1OPDCJypMB1PhYyridvCDRZ8A1ZabZUO6SOB1ZO42n5RCaffMROdXBkGGdjkSsClX_AobowKlN6Ll7YqoKryKpuxOiGBtlkJj8OLbPogd5BMKyUTOCmcrCzM1mm9xnHty9rzvWKpUmVpDz4szWB7vdRuyj3XixV4LKa_rde4M',
-      category: '上装',
-    ),
-    WardrobeItemData(
-      name: '卡其色短裤',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuCyou_Ay7EGZcINUmwokf-hngteoAjHo4HOlKKKqfTrT0AodgDSkgkPpAH88_at3v8JpCG7ZB620gj2LPl33CL2w5Ms4aeN8kUAJO3XAqRnc40WOo9SSMw9Z3-L_HVhmcH8bneD_jOtH4rMcmCl9ZKxr7D222WtDgHthFLTiMVmwBiUiIhCJL_-Ax6zVt5i9VFnLi5o213juz1pvOvU66ZZ0zgmtR24SCFel65oOmWZD7NjJsrvjOu6ZVA6N7IM0PXRMTi7j5_yVeM',
-      category: '下装',
-    ),
-    WardrobeItemData(
-      name: '印花半身裙',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuD1LKL49mzR0AI5YsGvt3azlURRDnkM_KSzTjF2T6obJ4UGE4Z8OkGWDir0ty0HK_586Nh-5P88l1J5E65_KO5s_SVIt72Y2CpAi1ntHbipSGQa5GsfKNDpDMGiIB1UR9nRb18Tti9h1UwDq_AaXek0KyL-Fb7jT3kz79RkaaYF74gN-s0cRCBT-FJfPoEhbSCnGB-ULNgGavVYcVJvqwNWkryVyShD5_uF8nAboaVNSX0GRI-XfYGpY_Rz_Sc_JTbyhX1csbZ0aFA',
-      category: '下装',
-    ),
-    WardrobeItemData(
-      name: '高跟鞋',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuB2mGaXRPi7NtXFSA5fjKPjWNFJLVnmb2EQwhzg6k0UeJU9QKoPbpmbEuIvP9CQqS6C9n8e1CuEXwYQev9tnVbHAEd6uFc9n22YgQ2btJRg31W7nE_DTnjJ54JLBoWz0PWHTPiDV4oPLHoXwEAHPHgaFzJh9XJv7c0qVcn4TY9DIUNXeYUEaIEeSoy6ZCISexhLbaJXQDNwwDvZHDhLIGMOtb-NBGz4ZQU_T_uNCaI7MHoarT6As1GOr_4zvQmippvPg3UXja0vHg4',
-      category: '鞋履',
-    ),
-    WardrobeItemData(
-      name: '羊毛围巾',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuDlR4u_zYKI1yNt_vj-LY79jdOuFtWyDtiKkAeLucxiIrpHUzD9MDvR8pYcebpv20ek5z32WHIqcwRn2ZvopbMUCmurcLII927ZL5rpi-5-YasZayljzwPL9W8VQDMY6UuRL5hWwqtuEV0tAIJi9w9ipVoQJIEVkKkCzSS2DKS2K8UpYCKVB4pttcydbVkTo0MWoWVml7r6s1Sd3HheKO40_xona6JOOlsUwoVDDobroIIGPL-cLmItQMnfRjbA5pmi4Z2g6bcjNAg',
-      category: '外套',
-    ),
-    WardrobeItemData(
-      name: '双肩背包',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuBqbrYufRlUaPDGEIg45sHxeFp2umPUZH1N9GHa0P9J6Jf8jrpilITqCP6rTNcjkwP4r_Z9QKvnkiX52bHRZZIJxL9IoQY2ueD23NTYdvgYYqz4-eY3F5U9UV68wvJTVq89hdU8s-KkBMBW0lvk7G_W17bK3XhCmf3cj3YhIRmN1EFodxHnUbN0eGwMiBGWT9cuSwkzsrN1D-hxJTm0x_Qph8lLd0NDZiXNs7zw2jjMhObzM8mj1KgKUWJzULVEd7Tr_s8u6Kk1G2A',
-      category: '包包',
-    ),
-  ];
+  List<Map<String, dynamic>> _clothingItems = [];
+  bool _isLoading = true;
+  String? _error;
 
   int _selectedCategoryIndex = 0;
 
-  List<WardrobeItemData> get _filteredItems {
+  List<Map<String, dynamic>> get _filteredItems {
     final selected = _categories[_selectedCategoryIndex];
-    if (selected == '全部') return _items;
-    return _items.where((item) => item.category == selected).toList();
+    if (selected == '全部') return _clothingItems;
+    return _clothingItems.where((item) => item['category'] == selected).toList();
   }
 
-  List<WardrobeItemData> get _selectedItems {
-    return _selectedIndices.map((index) => _items[index]).toList();
+  List<Map<String, dynamic>> get _selectedItems {
+    return _selectedIndices.map((index) => _clothingItems[index]).toList();
   }
 
   void _toggleSelection(int index) {
@@ -127,10 +58,11 @@ class _WardrobePageState extends State<WardrobePage>
       }
       // 更新全局store
       WardrobeSelectionStore.setSelections(_selectedIndices);
-      // 保存图片映射
+      // 保存图片路径映射（使用image_path用于后端匹配）
       final imageMap = <int, String>{};
-      for (var i = 0; i < _items.length; i++) {
-        imageMap[i] = _items[i].image;
+      for (var i = 0; i < _clothingItems.length; i++) {
+        // 使用image_path而不是image_url，因为后端需要用这个字段匹配
+        imageMap[i] = _clothingItems[i]['image_path'] ?? '';
       }
       WardrobeSelectionStore.setItemImages(imageMap);
     });
@@ -141,8 +73,8 @@ class _WardrobePageState extends State<WardrobePage>
       MaterialPageRoute(
         builder: (_) => WardrobeSearchPage(
           entries: List.generate(
-            _items.length,
-            (index) => WardrobeSearchEntry(index: index, item: _items[index]),
+            _clothingItems.length,
+            (index) => WardrobeSearchEntry(index: index, itemData: _clothingItems[index]),
           ),
         ),
       ),
@@ -169,6 +101,58 @@ class _WardrobePageState extends State<WardrobePage>
       if (categoryIndex != -1) {
         setState(() => _selectedCategoryIndex = categoryIndex);
       }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadClothingItems();
+  }
+
+  Future<void> _loadClothingItems() async {
+    try {
+      // 检查用户是否已登录
+      if (!ApiService.isAuthenticated) {
+        setState(() {
+          _error = '请先登录以查看您的衣柜';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      final response = await ApiService.getClothingItems();
+      final List<dynamic> list = response['list'] ?? [];
+      setState(() {
+        _clothingItems = List<Map<String, dynamic>>.from(list);
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = '加载衣物失败: $e';
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('加载衣物失败: $e')),
+      );
+    }
+  }
+
+  Future<void> _navigateToAddClothing() async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const AddClothingPage(),
+      ),
+    );
+    
+    // 如果添加成功，刷新数据
+    if (result != null) {
+      _loadClothingItems();
     }
   }
 
@@ -233,82 +217,109 @@ class _WardrobePageState extends State<WardrobePage>
                     horizontal: 24,
                     vertical: 24,
                   ),
-                  sliver: SliverGrid(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final item = _filteredItems[index];
-                      final itemIndex = _items.indexOf(item);
-                      final isSelected = _selectedIndices.contains(itemIndex);
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => _toggleSelection(itemIndex),
-                              child: Stack(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(20),
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                      ),
-                                      child: Image.network(
-                                        item.image,
-                                        fit: BoxFit.cover,
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                      ),
+                  sliver: _isLoading
+                      ? const SliverToBoxAdapter(
+                          child: Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(32.0),
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                        )
+                      : _error != null
+                          ? const SliverToBoxAdapter(
+                              child: Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(32.0),
+                                  child: Text('加载衣物失败，请重试'),
+                                ),
+                              ),
+                            )
+                          : _clothingItems.isEmpty
+                              ? const SliverToBoxAdapter(
+                                  child: Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(32.0),
+                                      child: Text('还没有添加任何衣物'),
                                     ),
                                   ),
-                                  if (isSelected)
-                                    Positioned(
-                                      top: 8,
-                                      right: 8,
-                                      child: Container(
-                                        height: 28,
-                                        width: 28,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black,
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                          border: Border.all(
-                                            color: Colors.white,
-                                            width: 2,
+                                )
+                              : SliverGrid(
+                                  delegate: SliverChildBuilderDelegate((context, index) {
+                                    final item = _filteredItems[index];
+                                    final itemIndex = _clothingItems.indexOf(item);
+                                    final isSelected = _selectedIndices.contains(itemIndex);
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () => _toggleSelection(itemIndex),
+                                            child: Stack(
+                                              children: [
+                                                ClipRRect(
+                                                  borderRadius: BorderRadius.circular(20),
+                                                  child: DecoratedBox(
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                    ),
+                                                    child: Image.network(
+                                                      item['image_url'] ?? '',
+                                                      fit: BoxFit.cover,
+                                                      width: double.infinity,
+                                                      height: double.infinity,
+                                                    ),
+                                                  ),
+                                                ),
+                                                if (isSelected)
+                                                  Positioned(
+                                                    top: 8,
+                                                    right: 8,
+                                                    child: Container(
+                                                      height: 28,
+                                                      width: 28,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.black,
+                                                        borderRadius: BorderRadius.circular(
+                                                          16,
+                                                        ),
+                                                        border: Border.all(
+                                                          color: Colors.white,
+                                                          width: 2,
+                                                        ),
+                                                      ),
+                                                      child: const Icon(
+                                                        Icons.check,
+                                                        size: 16,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                        child: const Icon(
-                                          Icons.check,
-                                          size: 16,
-                                          color: Colors.white,
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          item['name'] ?? '未命名',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: StitchColors.textPrimary,
+                                          ),
                                         ),
+                                      ],
+                                    );
+                                  }, childCount: _filteredItems.length),
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        mainAxisSpacing: 20,
+                                        crossAxisSpacing: 20,
+                                        childAspectRatio: 0.78,
                                       ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            item.name,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: StitchColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      );
-                    }, childCount: _filteredItems.length),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 20,
-                          crossAxisSpacing: 20,
-                          childAspectRatio: 0.78,
-                        ),
-                  ),
+                                ),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 120)),
               ],
@@ -318,7 +329,7 @@ class _WardrobePageState extends State<WardrobePage>
             right: 24,
             bottom: _selectedIndices.isEmpty ? 120 : 210,
             child: FloatingActionButton(
-              onPressed: _showAddPhotoSheet,
+              onPressed: _navigateToAddClothing,
               backgroundColor: Colors.white,
               foregroundColor: StitchColors.textPrimary,
               shape: const CircleBorder(),
@@ -357,7 +368,7 @@ class _WardrobePageState extends State<WardrobePage>
                           child: Row(
                             children: [
                               ..._selectedItems.map((item) {
-                                final itemIndex = _items.indexOf(item);
+                                final itemIndex = _clothingItems.indexOf(item);
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 8),
                                   child: GestureDetector(
@@ -365,7 +376,7 @@ class _WardrobePageState extends State<WardrobePage>
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(12),
                                       child: Image.network(
-                                        item.image,
+                                        item['image_url'] ?? '',
                                         width: 48,
                                         height: 48,
                                         fit: BoxFit.cover,
@@ -405,9 +416,23 @@ class _WardrobePageState extends State<WardrobePage>
                           ),
                           shape: const StadiumBorder(),
                         ),
-                        onPressed: () => StitchShellCoordinator.selectTab(
-                          StitchTab.fittingRoom,
-                        ),
+                        onPressed: () {
+                          if (StitchShellCoordinator.isReady) {
+                            StitchShellCoordinator.selectTab(StitchTab.fittingRoom);
+                          } else {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => AiFittingRoomPage(
+                                  currentTab: StitchTab.fittingRoom,
+                                  onTabSelected: (tab) {
+                                    Navigator.of(context).pop();
+                                    StitchShellCoordinator.selectTab(tab);
+                                  },
+                                ),
+                              ),
+                            );
+                          }
+                        },
                         child: const Text(
                           '一键生成',
                           style: TextStyle(
@@ -439,81 +464,6 @@ class _WardrobePageState extends State<WardrobePage>
 
   @override
   bool get wantKeepAlive => true;
-
-  Future<void> _showAddPhotoSheet() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(
-                    Icons.photo_camera,
-                    color: Colors.black87,
-                  ),
-                  title: const Text('拍照添加衣物'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickImage(ImageSource.camera);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(
-                    Icons.photo_library,
-                    color: Colors.black87,
-                  ),
-                  title: const Text('从相册选择衣物'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickImage(ImageSource.gallery);
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _pickImage(ImageSource source) async {
-    try {
-      final image = await _picker.pickImage(source: source, maxWidth: 2048);
-      if (!mounted) return;
-      if (image != null) {
-        final Uint8List bytes = await image.readAsBytes();
-        if (!mounted) return;
-        final message = source == ImageSource.camera ? '已拍摄新衣物' : '已选择相册衣物';
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('$message：${image.name}')));
-        await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => AddClothingProcessingPage(
-              imageBytes: bytes,
-              fileName: image.name,
-            ),
-            settings: const RouteSettings(
-              name: AddClothingProcessingPage.routeName,
-            ),
-          ),
-        );
-      }
-    } catch (err) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('操作失败：$err')));
-    }
-  }
 }
 
 class _CircleIcon extends StatelessWidget {
@@ -538,18 +488,6 @@ class _CircleIcon extends StatelessWidget {
       ),
     );
   }
-}
-
-class WardrobeItemData {
-  const WardrobeItemData({
-    required this.name,
-    required this.image,
-    required this.category,
-  });
-
-  final String name;
-  final String image;
-  final String category;
 }
 
 class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
@@ -633,10 +571,10 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
 }
 
 class WardrobeSearchEntry {
-  const WardrobeSearchEntry({required this.index, required this.item});
+  const WardrobeSearchEntry({required this.index, required this.itemData});
 
   final int index;
-  final WardrobeItemData item;
+  final Map<String, dynamic> itemData;
 }
 
 class WardrobeSearchPage extends StatefulWidget {
@@ -663,8 +601,10 @@ class _WardrobeSearchPageState extends State<WardrobeSearchPage> {
     final filtered = widget.entries.where((entry) {
       if (_query.isEmpty) return true;
       final lower = _query.toLowerCase();
-      return entry.item.name.toLowerCase().contains(lower) ||
-          entry.item.category.toLowerCase().contains(lower);
+      final name = entry.itemData['name'] ?? '';
+      final category = entry.itemData['category'] ?? '';
+      return name.toLowerCase().contains(lower) ||
+          category.toLowerCase().contains(lower);
     }).toList();
 
     return Scaffold(
@@ -728,21 +668,21 @@ class _WardrobeSearchPageState extends State<WardrobeSearchPage> {
                   leading: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.network(
-                      entry.item.image,
+                      entry.itemData['image_url'] ?? '',
                       width: 56,
                       height: 56,
                       fit: BoxFit.cover,
                     ),
                   ),
                   title: Text(
-                    entry.item.name,
+                    entry.itemData['name'] ?? '未命名',
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   subtitle: Text(
-                    entry.item.category,
+                    entry.itemData['category'] ?? '未分类',
                     style: const TextStyle(
                       fontSize: 13,
                       color: StitchColors.textSecondary,
