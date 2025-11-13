@@ -58,13 +58,22 @@ class _SavedLooksPageState extends State<SavedLooksPage> {
       final List<dynamic> items = response['list'] ?? [];
       final int total = response['total'] ?? 0;
 
+      print('======= 后端返回的原始数据 =======');
+      print('响应数据: $response');
+      print('穿搭列表长度: ${items.length}');
+      print('================================');
+
       // 将后端数据转换为本地SavedLook对象
       final List<SavedLook> looks = items.map((item) {
+        print('\n--- 处理穿搭 ${item['id']} ---');
+        print('原始item数据: $item');
+        
         final List<String> clothingImagePaths = 
             (item['clothing_image_urls'] as List<dynamic>?)
                 ?.cast<String>() ?? [];
         
-        print('穿搭 ${item['id']} 的衣物图片路径: $clothingImagePaths');
+        print('解析后的衣物图片路径: $clothingImagePaths');
+        print('衣物图片数量: ${clothingImagePaths.length}');
         
         return SavedLook(
           id: item['id'].toString(),

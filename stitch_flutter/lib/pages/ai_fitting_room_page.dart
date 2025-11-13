@@ -256,6 +256,12 @@ class _AiFittingRoomPageState extends State<AiFittingRoomPage>
       // 获取用户选择的衣服图片列表
       final selectedClothingImages = _getSelectedClothingImages();
       
+      print('======= AI试穿室保存穿搭 =======');
+      print('选中的衣物图片: $selectedClothingImages');
+      print('衣物数量: ${selectedClothingImages.length}');
+      print('封面图片: ${_generatedImages[_currentImageIndex]}');
+      print('===============================');
+      
       if (selectedClothingImages.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -279,10 +285,12 @@ class _AiFittingRoomPageState extends State<AiFittingRoomPage>
       }
 
       // 调用后端API保存穿搭
+      print('开始调用后端API...');
       final response = await ApiService.createSavedLook(
         coverImageUrl: _generatedImages[_currentImageIndex],
         clothingImageUrls: selectedClothingImages,
       );
+      print('后端响应: $response');
 
       if (response['id'] != null) {
         // 本地也保存一份，用于即时显示
@@ -320,19 +328,26 @@ class _AiFittingRoomPageState extends State<AiFittingRoomPage>
   }
 
   List<String> _getSelectedClothingImages() {
+    print('\n--- 获取选中的衣物图片 ---');
+    
     // 优先级1: 从首页推荐store中获取衣服图片
     final recommendationImages = CurrentRecommendationStore.getClothingImages();
+    print('首页推荐图片: $recommendationImages');
     if (recommendationImages.isNotEmpty) {
+      print('使用首页推荐图片');
       return recommendationImages;
     }
 
     // 优先级2: 从衣柜store中获取用户选择的衣服图片
     final wardrobeImages = WardrobeSelectionStore.getSelectedImages();
+    print('衣柜选择图片: $wardrobeImages');
     if (wardrobeImages.isNotEmpty) {
+      print('使用衣柜选择图片');
       return wardrobeImages;
     }
 
     // 如果没有选择任何衣物，返回空列表
+    print('未找到任何衣物图片');
     return [];
   }
 
