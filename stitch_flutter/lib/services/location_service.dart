@@ -17,11 +17,18 @@ class LocationService {
   /// 通过IP获取城市信息（高德IP定位API）
   /// 这个API可以在Web环境中使用，不需要权限
   /// API文档: https://lbs.amap.com/api/webservice/guide/api/ipconfig
+  /// 
+  /// 注意：如果返回空数组，可能的原因：
+  /// - 局域网IP（内网地址，如 192.168.x.x, 10.x.x.x）
+  /// - 使用了代理/VPN，导致IP无法识别
+  /// - 国外IP地址（高德仅支持国内IP定位）
+  /// - IP地址格式非法
   static Future<CityInfo> getCityByIP() async {
     try {
       final url = Uri.parse('https://restapi.amap.com/v3/ip?key=$_apiKey&output=JSON');
       
       print('📍 请求IP定位API: $url');
+      print('   说明：如果不传ip参数，API会使用请求来源的IP地址');
       
       final response = await http.get(url);
       
@@ -60,7 +67,14 @@ class LocationService {
               adcode: adcode,
             );
           } else {
-            print('⚠️ IP定位返回的adcode为空或无效');
+            // 详细说明失败原因
+            print('⚠️ IP定位失败 - 返回的adcode为空或无效');
+            print('   可能原因：');
+            print('   1. 当前IP为局域网IP（内网地址）');
+            print('   2. 使用了代理/VPN，IP地址无法识别');
+            print('   3. IP地址为国外地址（高德仅支持国内IP定位）');
+            print('   4. IP地址格式非法');
+            print('   解决方案：将使用默认城市（北京）获取天气信息');
           }
         } else {
           print('⚠️ IP定位API返回失败: ${data['info']}');
