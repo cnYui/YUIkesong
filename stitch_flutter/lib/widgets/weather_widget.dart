@@ -34,15 +34,17 @@ class _WeatherWidgetState extends State<WeatherWidget> {
   void initState() {
     super.initState();
     _checkAuthAndLoadWeather();
+    // 监听城市选择变化
+    CitySelectionStore().addListener(_onCityChanged);
   }
 
   /// 检查登录状态并加载天气
   void _checkAuthAndLoadWeather() {
     final authService = AuthService();
     
-    // 如果已登录，直接加载天气
+    // 如果已登录，显示默认天气（北京，晴）
     if (authService.isAuthenticated) {
-      _loadWeather();
+      _loadDefaultWeather();
       return;
     }
 
@@ -60,13 +62,34 @@ class _WeatherWidgetState extends State<WeatherWidget> {
     }
   }
 
+  /// 加载默认天气（北京，晴）
+  void _loadDefaultWeather() {
+    if (mounted) {
+      setState(() {
+        _cityInfo = LocationService.getDefaultCity();
+        _weatherInfo = WeatherInfo(
+          province: '北京',
+          city: '北京市',
+          adcode: '110000',
+          weather: '晴',
+          temperature: '20',
+          windDirection: '无风',
+          windPower: '≤3',
+          humidity: '50',
+          reportTime: DateTime.now().toString(),
+        );
+        _isLoading = false;
+      });
+    }
+  }
+
   /// 登录状态变化回调
   void _onAuthChanged() {
     final authService = AuthService();
     
     if (authService.isAuthenticated && _weatherInfo == null) {
-      // 用户刚登录，开始加载天气
-      _loadWeather();
+      // 用户刚登录，显示默认天气
+      _loadDefaultWeather();
     } else if (!authService.isAuthenticated) {
       // 用户登出，清空天气信息
       if (mounted) {
@@ -80,14 +103,6 @@ class _WeatherWidgetState extends State<WeatherWidget> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _checkAuthAndLoadWeather();
-    // 监听城市选择变化
-    CitySelectionStore().addListener(_onCityChanged);
-  }
-
-  @override
   void dispose() {
     // 移除所有监听器
     AuthService().removeListener(_onAuthChanged);
@@ -97,17 +112,32 @@ class _WeatherWidgetState extends State<WeatherWidget> {
 
   /// 城市选择变化回调
   void _onCityChanged() {
-    // 如果用户选择了新城市，重新加载天气
+    // 如果用户选择了新城市，调用API获取真实天气
     if (AuthService().isAuthenticated) {
-      _loadWeather();
+      final cityStore = CitySelectionStore();
+      // 只有在用户手动选择城市时才调用API
+      if (cityStore.hasManualSelection) {
+        _loadWeather();
+      } else {
+        // 如果用户清除了选择，恢复默认天气
+        _loadDefaultWeather();
+      }
     }
   }
 
-  /// 加载天气数据（仅在登录后调用）
+  /// 加载天气数据（仅在用户手动选择城市后调用）
   Future<void> _loadWeather() async {
     // 再次检查登录状态
     if (!AuthService().isAuthenticated) {
       print('⚠️ 用户未登录，跳过天气加载');
+      return;
+    }
+
+    // 只有在用户手动选择城市时才调用API
+    final cityStore = CitySelectionStore();
+    if (!cityStore.hasManualSelection) {
+      print('⚠️ 用户未手动选择城市，使用默认天气');
+      _loadDefaultWeather();
       return;
     }
 
@@ -117,21 +147,11 @@ class _WeatherWidgetState extends State<WeatherWidget> {
         _errorMessage = '';
       });
 
-      // 1. 获取用户城市（优先使用手动选择的城市）
-      final cityStore = CitySelectionStore();
-      CityInfo city;
-      
-      if (cityStore.hasManualSelection) {
-        // 使用用户手动选择的城市
-        city = cityStore.selectedCity!;
-        print('📍 使用用户选择的城市: ${city.name} (${city.adcode})');
-      } else {
-        // 使用IP定位
-        city = await LocationService.getCityByIP();
-        print('📍 使用IP定位的城市: ${city.name} (${city.adcode})');
-      }
+      // 使用用户手动选择的城市
+      final city = cityStore.selectedCity!;
+      print('📍 使用用户选择的城市: ${city.name} (${city.adcode})');
 
-      // 2. 获取天气信息
+      // 获取天气信息
       final weather = await WeatherService.getRealTimeWeather(city.adcode);
 
       if (mounted) {
@@ -356,7 +376,7 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
     final authService = AuthService();
     
     if (authService.isAuthenticated) {
-      _loadWeather();
+      _loadDefaultWeather();
       return;
     }
 
@@ -372,11 +392,31 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
     }
   }
 
+  /// 加载默认天气（北京，晴）
+  void _loadDefaultWeather() {
+    if (mounted) {
+      setState(() {
+        _weatherInfo = WeatherInfo(
+          province: '北京',
+          city: '北京市',
+          adcode: '110000',
+          weather: '晴',
+          temperature: '20',
+          windDirection: '无风',
+          windPower: '≤3',
+          humidity: '50',
+          reportTime: DateTime.now().toString(),
+        );
+        _isLoading = false;
+      });
+    }
+  }
+
   void _onAuthChanged() {
     final authService = AuthService();
     
     if (authService.isAuthenticated && _weatherInfo == null) {
-      _loadWeather();
+      _loadDefaultWeather();
     } else if (!authService.isAuthenticated) {
       if (mounted) {
         setState(() {
@@ -389,7 +429,14 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
 
   void _onCityChanged() {
     if (AuthService().isAuthenticated) {
-      _loadWeather();
+      final cityStore = CitySelectionStore();
+      // 只有在用户手动选择城市时才调用API
+      if (cityStore.hasManualSelection) {
+        _loadWeather();
+      } else {
+        // 如果用户清除了选择，恢复默认天气
+        _loadDefaultWeather();
+      }
     }
   }
 
@@ -405,17 +452,19 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
       return;
     }
 
+    // 只有在用户手动选择城市时才调用API
+    final cityStore = CitySelectionStore();
+    if (!cityStore.hasManualSelection) {
+      _loadDefaultWeather();
+      return;
+    }
+
     try {
-      // 优先使用用户手动选择的城市
-      final cityStore = CitySelectionStore();
-      CityInfo city;
-      
-      if (cityStore.hasManualSelection) {
-        city = cityStore.selectedCity!;
-      } else {
-        city = await LocationService.getCityByIP();
-      }
-      
+      setState(() {
+        _isLoading = true;
+      });
+
+      final city = cityStore.selectedCity!;
       final weather = await WeatherService.getRealTimeWeather(city.adcode);
 
       if (mounted) {
