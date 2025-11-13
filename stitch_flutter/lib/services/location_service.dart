@@ -16,6 +16,7 @@ class LocationService {
 
   /// 通过IP获取城市信息（高德IP定位API）
   /// 这个API可以在Web环境中使用，不需要权限
+  /// API文档: https://lbs.amap.com/api/webservice/guide/api/ipconfig
   static Future<CityInfo> getCityByIP() async {
     try {
       final url = Uri.parse('https://restapi.amap.com/v3/ip?key=$_apiKey&output=JSON');
@@ -28,18 +29,51 @@ class LocationService {
         final data = json.decode(utf8.decode(response.bodyBytes));
         print('📍 IP定位API响应: $data');
         
-        if (data['status'] == '1' && data['adcode'] != null) {
-          return CityInfo(
-            name: data['city'] ?? data['province'] ?? '北京市',
-            adcode: data['adcode'],
-          );
+        // 检查status（可能是字符串"1"或整数1）
+        final status = data['status'];
+        final isSuccess = status == '1' || status == 1;
+        
+        if (isSuccess) {
+          // 安全地提取字符串字段（处理可能是数组的情况）
+          String? getStringValue(dynamic value) {
+            if (value == null) return null;
+            if (value is String && value.isNotEmpty) return value;
+            if (value is List && value.isEmpty) return null;
+            // 如果是数组但非空，尝试取第一个元素
+            if (value is List && value.isNotEmpty) {
+              final first = value[0];
+              if (first is String) return first;
+            }
+            return null;
+          }
+          
+          final province = getStringValue(data['province']);
+          final city = getStringValue(data['city']);
+          final adcode = getStringValue(data['adcode']);
+          
+          // 如果adcode有效，使用返回的城市信息
+          if (adcode != null && adcode.isNotEmpty) {
+            final cityName = city ?? province ?? '北京市';
+            print('📍 解析成功: 城市=$cityName, adcode=$adcode');
+            return CityInfo(
+              name: cityName,
+              adcode: adcode,
+            );
+          } else {
+            print('⚠️ IP定位返回的adcode为空或无效');
+          }
+        } else {
+          print('⚠️ IP定位API返回失败: ${data['info']}');
         }
+      } else {
+        print('❌ IP定位API请求失败: HTTP ${response.statusCode}');
       }
     } catch (e) {
       print('❌ IP定位异常: $e');
     }
     
     // 如果失败，返回默认城市
+    print('📍 使用默认城市: 北京市 (110000)');
     return getDefaultCity();
   }
 
