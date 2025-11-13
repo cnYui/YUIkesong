@@ -177,9 +177,12 @@ class _WeatherWidgetState extends State<WeatherWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // 使用 AnimatedBuilder 监听登录状态变化
+    // 使用 AnimatedBuilder 同时监听登录状态和城市选择变化
     return AnimatedBuilder(
-      animation: AuthService(),
+      animation: Listenable.merge([
+        AuthService(),
+        CitySelectionStore(),
+      ]),
       builder: (context, _) {
         // 检查登录状态
         final isAuthenticated = AuthService().isAuthenticated;
@@ -484,9 +487,12 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // 使用 AnimatedBuilder 监听登录状态变化
+    // 使用 AnimatedBuilder 同时监听登录状态和城市选择变化
     return AnimatedBuilder(
-      animation: AuthService(),
+      animation: Listenable.merge([
+        AuthService(),
+        CitySelectionStore(),
+      ]),
       builder: (context, _) {
         final isAuthenticated = AuthService().isAuthenticated;
         
