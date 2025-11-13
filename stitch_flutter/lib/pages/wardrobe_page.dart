@@ -30,6 +30,7 @@ class _WardrobePageState extends State<WardrobePage>
     with AutomaticKeepAliveClientMixin {
   final ImagePicker _picker = ImagePicker();
   final Set<int> _selectedIndices = {};
+  int? _pendingDeleteIndex; // 待删除的衣物索引
 
   static const _categories = ['全部', '上装', '下装', '连衣裙', '外套', '鞋履', '配饰', '包包'];
 
@@ -51,6 +52,11 @@ class _WardrobePageState extends State<WardrobePage>
 
   void _toggleSelection(int index) {
     setState(() {
+      // 如果点击的是待删除的项，不处理选择逻辑
+      if (_pendingDeleteIndex == index) {
+        return;
+      }
+      
       if (_selectedIndices.contains(index)) {
         _selectedIndices.remove(index);
       } else {
@@ -65,7 +71,84 @@ class _WardrobePageState extends State<WardrobePage>
         imageMap[i] = _clothingItems[i]['image_path'] ?? '';
       }
       WardrobeSelectionStore.setItemImages(imageMap);
+      // 清除待删除状态
+      _pendingDeleteIndex = null;
     });
+  }
+
+  /// 删除衣物
+  Future<void> _deleteClothingItem(int index) async {
+    if (index < 0 || index >= _clothingItems.length) return;
+    
+    final item = _clothingItems[index];
+    final itemId = item['id'] as String?;
+    
+    if (itemId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('❌ 无法删除：衣物ID不存在'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      setState(() {
+        _pendingDeleteIndex = null;
+      });
+      return;
+    }
+    
+    try {
+      await ApiService.deleteClothingItem(itemId);
+      
+      setState(() {
+        _clothingItems.removeAt(index);
+        _pendingDeleteIndex = null;
+        
+        // 调整选中索引
+        if (_selectedIndices.contains(index)) {
+          _selectedIndices.remove(index);
+        }
+        
+        // 更新所有大于被删除索引的选中项
+        final updatedIndices = <int>{};
+        for (var selectedIndex in _selectedIndices) {
+          if (selectedIndex > index) {
+            updatedIndices.add(selectedIndex - 1);
+          } else {
+            updatedIndices.add(selectedIndex);
+          }
+        }
+        _selectedIndices.clear();
+        _selectedIndices.addAll(updatedIndices);
+        
+        // 更新全局store
+        WardrobeSelectionStore.setSelections(_selectedIndices);
+        final imageMap = <int, String>{};
+        for (var i = 0; i < _clothingItems.length; i++) {
+          imageMap[i] = _clothingItems[i]['image_path'] ?? '';
+        }
+        WardrobeSelectionStore.setItemImages(imageMap);
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ 衣物删除成功！'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ 删除失败：${e.toString().replaceAll('Exception: ', '')}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      setState(() {
+        _pendingDeleteIndex = null;
+      });
+    }
   }
 
   Future<void> _openSearchPage() async {
@@ -254,7 +337,13 @@ class _WardrobePageState extends State<WardrobePage>
                                       children: [
                                         Expanded(
                                           child: GestureDetector(
-                                            onTap: () => _toggleSelection(itemIndex),
+                                            onTap: () {
+                                              if (_pendingDeleteIndex == itemIndex) {
+                                                // 如果点击的是待删除的项，不处理选择逻辑
+                                                return;
+                                              }
+                                              _toggleSelection(itemIndex);
+                                            },
                                             child: Stack(
                                               children: [
                                                 ClipRRect(
@@ -275,25 +364,51 @@ class _WardrobePageState extends State<WardrobePage>
                                                   Positioned(
                                                     top: 8,
                                                     right: 8,
-                                                    child: Container(
-                                                      height: 28,
-                                                      width: 28,
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.black,
-                                                        borderRadius: BorderRadius.circular(
-                                                          16,
-                                                        ),
-                                                        border: Border.all(
-                                                          color: Colors.white,
-                                                          width: 2,
-                                                        ),
-                                                      ),
-                                                      child: const Icon(
-                                                        Icons.check,
-                                                        size: 16,
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
+                                                    child: (_pendingDeleteIndex == itemIndex)
+                                                        ? GestureDetector(
+                                                            onTap: () => _deleteClothingItem(itemIndex),
+                                                            child: Container(
+                                                              height: 28,
+                                                              width: 28,
+                                                              decoration: BoxDecoration(
+                                                                color: Colors.red,
+                                                                borderRadius: BorderRadius.circular(16),
+                                                                border: Border.all(
+                                                                  color: Colors.white,
+                                                                  width: 2,
+                                                                ),
+                                                              ),
+                                                              child: const Icon(
+                                                                Icons.close,
+                                                                size: 16,
+                                                                color: Colors.white,
+                                                              ),
+                                                            ),
+                                                          )
+                                                        : GestureDetector(
+                                                            onTap: () {
+                                                              setState(() {
+                                                                _pendingDeleteIndex = itemIndex;
+                                                              });
+                                                            },
+                                                            child: Container(
+                                                              height: 28,
+                                                              width: 28,
+                                                              decoration: BoxDecoration(
+                                                                color: Colors.black,
+                                                                borderRadius: BorderRadius.circular(16),
+                                                                border: Border.all(
+                                                                  color: Colors.white,
+                                                                  width: 2,
+                                                                ),
+                                                              ),
+                                                              child: const Icon(
+                                                                Icons.check,
+                                                                size: 16,
+                                                                color: Colors.white,
+                                                              ),
+                                                            ),
+                                                          ),
                                                   ),
                                               ],
                                             ),
