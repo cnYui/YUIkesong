@@ -9,11 +9,11 @@ class CitySelectionPage extends StatefulWidget {
 
   static const routeName = '/city-selection';
 
-  @override
-  State<CitySelectionPage> createState() => _CitySelectionPageState();
-}
+  // 获取城市列表（供外部访问）
+  static List<CityInfo> getCitiesList() {
+    return _cities;
+  }
 
-class _CitySelectionPageState extends State<CitySelectionPage> {
   // 写死的城市列表（常用城市）
   static const List<CityInfo> _cities = [
     CityInfo(name: '北京市', adcode: '110000'),
@@ -50,6 +50,13 @@ class _CitySelectionPageState extends State<CitySelectionPage> {
     CityInfo(name: '乌鲁木齐市', adcode: '650100'),
   ];
 
+  @override
+  State<CitySelectionPage> createState() => _CitySelectionPageState();
+}
+
+class _CitySelectionPageState extends State<CitySelectionPage> {
+  // 使用静态列表
+  List<CityInfo> get _cities => CitySelectionPage._cities;
   CityInfo? _selectedCity;
 
   @override
@@ -63,20 +70,22 @@ class _CitySelectionPageState extends State<CitySelectionPage> {
   }
 
   /// 保存选择并查询天气
-  void _saveSelection(CityInfo city) {
-    // 保存选择的城市
-    CitySelectionStore().setCity(city);
+  Future<void> _saveSelection(CityInfo city) async {
+    // 保存选择的城市（会保存到数据库）
+    await CitySelectionStore().setCity(city);
     
     // 返回上一页
-    Navigator.of(context).pop();
-    
-    // 显示成功提示
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('已切换到 ${city.name}'),
-        duration: const Duration(seconds: 1),
-      ),
-    );
+    if (mounted) {
+      Navigator.of(context).pop();
+      
+      // 显示成功提示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('已切换到 ${city.name}'),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    }
   }
 
   @override

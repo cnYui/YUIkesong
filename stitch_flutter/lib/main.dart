@@ -73,7 +73,7 @@ class _StitchShellState extends State<StitchShell> {
   void dispose() {
     StitchShellCoordinator.unregister(_setTab);
     super.dispose();
-  }
+}
 
   void _setTab(StitchTab tab) {
     if (_currentTab == tab) return;

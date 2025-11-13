@@ -55,9 +55,9 @@ export function setupSavedLooksRoutes(app, supabase, authenticateToken) {
             const wardrobeItem = wardrobeItems.find(item => item.image_path === url);
             if (wardrobeItem) {
               return {
-                saved_look_id: savedLookId,
+            saved_look_id: savedLookId,
                 wardrobe_item_id: wardrobeItem.id,
-                slot: `slot_${index + 1}`
+            slot: `slot_${index + 1}`
               };
             }
             return null;
@@ -67,8 +67,8 @@ export function setupSavedLooksRoutes(app, supabase, authenticateToken) {
 
           if (lookItems.length > 0) {
             const { error: insertError } = await supabase
-              .from('saved_look_items')
-              .insert(lookItems);
+            .from('saved_look_items')
+            .insert(lookItems);
             
             if (insertError) {
               console.error('插入衣物关联记录失败:', insertError);

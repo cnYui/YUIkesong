@@ -42,9 +42,9 @@ class _WeatherWidgetState extends State<WeatherWidget> {
   void _checkAuthAndLoadWeather() {
     final authService = AuthService();
     
-    // 如果已登录，显示默认天气（北京，晴）
+    // 如果已登录，从数据库加载保存的城市，然后加载天气
     if (authService.isAuthenticated) {
-      _loadDefaultWeather();
+      _loadWeatherFromDatabase();
       return;
     }
 
@@ -59,6 +59,34 @@ class _WeatherWidgetState extends State<WeatherWidget> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  /// 从数据库加载保存的城市，然后加载天气
+  Future<void> _loadWeatherFromDatabase() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      // 1. 从数据库加载保存的城市
+      await CitySelectionStore().loadSavedCity();
+      
+      // 2. 检查是否有保存的城市
+      final cityStore = CitySelectionStore();
+      if (cityStore.hasManualSelection) {
+        // 有保存的城市，调用API获取真实天气
+        print('📍 从数据库加载到保存的城市: ${cityStore.selectedCity!.name}');
+        await _loadWeather();
+      } else {
+        // 没有保存的城市，显示默认天气
+        print('📍 数据库中没有保存的城市，显示默认天气');
+        _loadDefaultWeather();
+      }
+    } catch (e) {
+      print('❌ 从数据库加载城市失败: $e');
+      // 如果加载失败，显示默认天气
+      _loadDefaultWeather();
     }
   }
 
@@ -88,8 +116,8 @@ class _WeatherWidgetState extends State<WeatherWidget> {
     final authService = AuthService();
     
     if (authService.isAuthenticated && _weatherInfo == null) {
-      // 用户刚登录，显示默认天气
-      _loadDefaultWeather();
+      // 用户刚登录，从数据库加载保存的城市并获取天气
+      _loadWeatherFromDatabase();
     } else if (!authService.isAuthenticated) {
       // 用户登出，清空天气信息
       if (mounted) {
@@ -379,7 +407,7 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
     final authService = AuthService();
     
     if (authService.isAuthenticated) {
-      _loadDefaultWeather();
+      _loadWeatherFromDatabase();
       return;
     }
 
@@ -392,6 +420,32 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  /// 从数据库加载保存的城市，然后加载天气
+  Future<void> _loadWeatherFromDatabase() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      // 1. 从数据库加载保存的城市
+      await CitySelectionStore().loadSavedCity();
+      
+      // 2. 检查是否有保存的城市
+      final cityStore = CitySelectionStore();
+      if (cityStore.hasManualSelection) {
+        // 有保存的城市，调用API获取真实天气
+        await _loadWeather();
+      } else {
+        // 没有保存的城市，显示默认天气
+        _loadDefaultWeather();
+      }
+    } catch (e) {
+      print('❌ 从数据库加载城市失败: $e');
+      // 如果加载失败，显示默认天气
+      _loadDefaultWeather();
     }
   }
 
@@ -419,7 +473,8 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> {
     final authService = AuthService();
     
     if (authService.isAuthenticated && _weatherInfo == null) {
-      _loadDefaultWeather();
+      // 用户刚登录，从数据库加载保存的城市并获取天气
+      _loadWeatherFromDatabase();
     } else if (!authService.isAuthenticated) {
       if (mounted) {
         setState(() {

@@ -304,6 +304,30 @@ class ApiService {
     }
   }
 
+  /// 更新用户资料
+  static Future<Map<String, dynamic>> updateUserProfile({
+    String? nickname,
+    String? avatarUrl,
+    String? city,
+  }) async {
+    final body = <String, dynamic>{};
+    if (nickname != null) body['nickname'] = nickname;
+    if (avatarUrl != null) body['avatar_url'] = avatarUrl;
+    if (city != null) body['city'] = city;
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/users/me'),
+      headers: _headers,
+      body: json.encode(body),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('更新用户资料失败: ${response.statusCode}');
+    }
+  }
+
   // 保存穿搭相关API
   static Future<Map<String, dynamic>> createSavedLook({
     required String coverImageUrl,
