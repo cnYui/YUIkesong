@@ -26,5 +26,9 @@ backend/api/node_modules/
 backend/**/.env
 *.env
 
+# Flutter
+stitch_flutter/.env
+stitch_flutter/**/.env
+
 # Logs
 *.log

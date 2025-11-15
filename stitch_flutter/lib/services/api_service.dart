@@ -1,9 +1,20 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:3001';
+  static String get baseUrl {
+    return dotenv.env['API_BASE_URL'] ?? 'http://localhost:3001';
+  }
+  
+  static String get supabaseUrl {
+    final url = dotenv.env['SUPABASE_URL'];
+    if (url == null || url.isEmpty) {
+      throw Exception('SUPABASE_URL 未在 .env 文件中设置');
+    }
+    return url;
+  }
   static String? _token;
 
   static void setToken(String token) {
@@ -399,6 +410,140 @@ class ApiService {
       return json.decode(response.body);
     } else {
       throw Exception('发布保存穿搭失败: ${response.statusCode}');
+    }
+  }
+
+  // ========== 天气缓存相关接口 ==========
+
+  /// 保存天气缓存到数据库
+  static Future<void> saveWeatherCache(Map<String, dynamic> weatherData) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/weather/cache'),
+      headers: _headers,
+      body: json.encode({'weatherData': weatherData}),
+    );
+
+    if (response.statusCode != 200) {
+      print('保存天气缓存失败: ${response.statusCode}');
+      throw Exception('保存天气缓存失败: ${response.statusCode}');
+    }
+  }
+
+  /// 从数据库获取天气缓存
+  static Future<Map<String, dynamic>?> getWeatherCache() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/weather/cache'),
+        headers: _headers,
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['weatherData'] as Map<String, dynamic>?;
+      } else if (response.statusCode == 404) {
+        // 没有缓存数据
+        return null;
+      } else {
+        throw Exception('获取天气缓存失败: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('获取天气缓存异常: $e');
+      return null;
+    }
+  }
+
+  // ========== 社区相关接口 ==========
+
+  /// 获取社区帖子列表
+  static Future<Map<String, dynamic>> getCommunityPosts({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final url = '$baseUrl/community/posts?page=$page&pageSize=$pageSize';
+    print('API请求: GET $url');
+    print('请求头: $_headers');
+    
+    final response = await http.get(
+      Uri.parse(url),
+      headers: _headers,
+    );
+
+    print('响应状态码: ${response.statusCode}');
+    print('响应体: ${response.body}');
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      print('错误响应: ${response.body}');
+      throw Exception('获取社区帖子列表失败: ${response.statusCode}');
+    }
+  }
+
+  /// 获取社区帖子详情
+  static Future<Map<String, dynamic>> getCommunityPostDetail(String postId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/community/posts/$postId'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('获取帖子详情失败: ${response.statusCode}');
+    }
+  }
+
+  /// 点赞/取消点赞帖子
+  static Future<Map<String, dynamic>> toggleLike(String postId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/community/posts/$postId/likes'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('点赞操作失败: ${response.statusCode}');
+    }
+  }
+
+  /// 获取帖子的评论列表
+  static Future<Map<String, dynamic>> getPostComments({
+    required String postId,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/community/posts/$postId/comments?page=$page&pageSize=$pageSize'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('获取评论列表失败: ${response.statusCode}');
+    }
+  }
+
+  /// 添加评论
+  static Future<Map<String, dynamic>> addComment({
+    required String postId,
+    required String content,
+    String? parentId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/community/posts/$postId/comments'),
+      headers: _headers,
+      body: json.encode({
+        'content': content,
+        if (parentId != null) 'parent_id': parentId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('添加评论失败: ${response.statusCode}');
     }
   }
 }

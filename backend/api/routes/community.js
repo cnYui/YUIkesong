@@ -70,6 +70,7 @@ export function setupCommunityRoutes(app, supabase, authenticateToken) {
   app.get('/community/posts', authenticateToken, async (req, res) => {
     try {
       const { page = 1, pageSize = 6 } = req.query;
+      const userId = req.user.id;
       
       const pageNum = parseInt(page);
       const sizeNum = parseInt(pageSize);
@@ -80,7 +81,7 @@ export function setupCommunityRoutes(app, supabase, authenticateToken) {
         .from('community_posts')
         .select(`
           *,
-          profiles!inner(nickname, avatar_url)
+          profiles!community_posts_user_id_fkey(nickname, avatar_url)
         `, { count: 'exact' })
         .eq('visibility', 'public')
         .is('deleted_at', null)
@@ -88,16 +89,51 @@ export function setupCommunityRoutes(app, supabase, authenticateToken) {
         .range(offset, offset + sizeNum - 1);
 
       if (error) {
-        return res.status(500).json({ code: 500, message: '获取帖子列表失败' });
+        console.error('获取社区帖子列表错误详情:', error);
+        return res.status(500).json({ code: 500, message: '获取帖子列表失败', error: error.message });
       }
 
-      // 格式化返回数据
-      const formattedPosts = (posts || []).map(post => ({
+      // 获取每个帖子的点赞数、评论数、图片和当前用户是否点赞
+      const formattedPosts = await Promise.all((posts || []).map(async (post) => {
+        // 获取点赞数
+        const { count: likesCount } = await supabase
+          .from('community_likes')
+          .select('*', { count: 'exact', head: true })
+          .eq('post_id', post.id);
+
+        // 获取评论数
+        const { count: commentsCount } = await supabase
+          .from('community_comments')
+          .select('*', { count: 'exact', head: true })
+          .eq('post_id', post.id);
+
+        // 获取帖子图片（包括造型图和衣服图片）
+        const { data: images } = await supabase
+          .from('community_post_images')
+          .select('image_url, sort_order')
+          .eq('post_id', post.id)
+          .order('sort_order', { ascending: true });
+
+        // 检查当前用户是否点赞
+        const { data: userLike } = await supabase
+          .from('community_likes')
+          .select('post_id')
+          .eq('post_id', post.id)
+          .eq('user_id', userId)
+          .single();
+
+        return {
         id: post.id,
         cover_image_url: post.cover_image_url,
+        images: (images || []).map(img => img.image_url),  // 返回所有图片数组
         username: post.profiles.nickname,
         avatar: post.profiles.avatar_url,
+          description: post.description,
+          likes_count: likesCount || 0,
+          comments_count: commentsCount || 0,
+          is_liked: !!userLike,
         created_at: post.created_at
+        };
       }));
 
       res.json({
@@ -108,7 +144,8 @@ export function setupCommunityRoutes(app, supabase, authenticateToken) {
       });
     } catch (error) {
       console.error('获取社区帖子列表错误:', error);
-      res.status(500).json({ code: 500, message: '服务器内部错误' });
+      console.error('错误堆栈:', error.stack);
+      res.status(500).json({ code: 500, message: '服务器内部错误', error: error.message });
     }
   });
 
@@ -123,7 +160,7 @@ export function setupCommunityRoutes(app, supabase, authenticateToken) {
         .from('community_posts')
         .select(`
           *,
-          profiles!inner(nickname, avatar_url)
+          profiles!community_posts_user_id_fkey(nickname, avatar_url)
         `)
         .eq('id', id)
         .or(`visibility.eq.public,user_id.eq.${userId}`)
@@ -145,12 +182,35 @@ export function setupCommunityRoutes(app, supabase, authenticateToken) {
         return res.status(500).json({ code: 500, message: '获取帖子图片失败' });
       }
 
+      // 获取点赞数
+      const { count: likesCount } = await supabase
+        .from('community_likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('post_id', id);
+
+      // 获取评论数
+      const { count: commentsCount } = await supabase
+        .from('community_comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('post_id', id);
+
+      // 检查当前用户是否点赞
+      const { data: userLike } = await supabase
+        .from('community_likes')
+        .select('post_id')
+        .eq('post_id', id)
+        .eq('user_id', userId)
+        .single();
+
       res.json({
         id: post.id,
-        images: images || [],
+        images: (images || []).map(img => img.image_url),
         username: post.profiles.nickname,
         avatar: post.profiles.avatar_url,
         description: post.description,
+        likes_count: likesCount || 0,
+        comments_count: commentsCount || 0,
+        is_liked: !!userLike,
         created_at: post.created_at
       });
     } catch (error) {
@@ -252,7 +312,7 @@ export function setupCommunityRoutes(app, supabase, authenticateToken) {
         .from('community_comments')
         .select(`
           *,
-          profiles!inner(nickname, avatar_url)
+          profiles!community_comments_user_id_fkey(nickname, avatar_url)
         `, { count: 'exact' })
         .eq('post_id', id)
         .order('created_at', { ascending: false })

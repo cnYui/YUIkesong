@@ -238,24 +238,51 @@ export function setupSavedLooksRoutes(app, supabase, authenticateToken) {
       const { id } = req.params;
       const userId = req.user.id;
 
-      // 获取保存穿搭信息
+      console.log(`发布穿搭到社区: 穿搭ID=${id}, 用户ID=${userId}`);
+
+      // 先查询保存穿搭基本信息
       const { data: savedLook, error: getError } = await supabase
         .from('saved_looks')
-        .select(`
-          *,
-          saved_look_items!inner(
-            wardrobe_item_id,
-            slot,
-            wardrobe_items!inner(image_path)
-          )
-        `)
+        .select('*')
         .eq('id', id)
         .eq('user_id', userId)
         .single();
 
       if (getError || !savedLook) {
+        console.error('保存穿搭不存在或查询失败:', getError);
         return res.status(404).json({ code: 404, message: '保存穿搭不存在' });
       }
+
+      console.log('找到保存穿搭:', savedLook);
+
+      // 查询关联的衣物（可能为空）
+      const { data: lookItems } = await supabase
+        .from('saved_look_items')
+        .select('wardrobe_item_id, slot')
+        .eq('saved_look_id', id)
+        .order('slot');
+
+      console.log('关联的衣物记录:', lookItems);
+
+      // 如果有衣物记录，查询衣物详情
+      let wardrobeImages = [];
+      if (lookItems && lookItems.length > 0) {
+        const wardrobeItemIds = lookItems.map(item => item.wardrobe_item_id);
+        const { data: wardrobeItems } = await supabase
+          .from('wardrobe_items')
+          .select('id, image_path')
+          .in('id', wardrobeItemIds);
+
+        if (wardrobeItems) {
+          // 按照slot顺序排列
+          wardrobeImages = lookItems.map(lookItem => {
+            const item = wardrobeItems.find(w => w.id === lookItem.wardrobe_item_id);
+            return item ? item.image_path : null;
+          }).filter(path => path !== null);
+        }
+      }
+
+      console.log('衣物图片URLs:', wardrobeImages);
 
       // 获取用户资料
       const { data: profile, error: profileError } = await supabase
@@ -265,8 +292,11 @@ export function setupSavedLooksRoutes(app, supabase, authenticateToken) {
         .single();
 
       if (profileError || !profile) {
+        console.error('获取用户资料失败:', profileError);
         return res.status(500).json({ code: 500, message: '获取用户资料失败' });
       }
+
+      console.log('用户昵称:', profile.nickname);
 
       // 创建社区帖子
       const postId = uuidv4();
@@ -285,8 +315,11 @@ export function setupSavedLooksRoutes(app, supabase, authenticateToken) {
         .single();
 
       if (postError || !post) {
+        console.error('创建社区帖子失败:', postError);
         return res.status(500).json({ code: 500, message: '创建社区帖子失败' });
       }
+
+      console.log('创建社区帖子成功:', post.id);
 
       // 创建帖子图片记录
       const postImages = [
@@ -299,24 +332,35 @@ export function setupSavedLooksRoutes(app, supabase, authenticateToken) {
       ];
 
       // 添加衣物图片
-      if (savedLook.saved_look_items && savedLook.saved_look_items.length > 0) {
-        savedLook.saved_look_items.forEach((item, index) => {
+      if (wardrobeImages.length > 0) {
+        wardrobeImages.forEach((imageUrl, index) => {
           postImages.push({
             id: uuidv4(),
             post_id: postId,
-            image_url: item.wardrobe_items.image_path,
+            image_url: imageUrl,
             sort_order: index + 1
           });
         });
       }
 
-      await supabase
+      console.log('准备插入帖子图片记录:', postImages.length, '张');
+
+      const { error: imagesError } = await supabase
         .from('community_post_images')
         .insert(postImages);
 
+      if (imagesError) {
+        console.error('插入帖子图片失败:', imagesError);
+        // 不返回错误，因为主帖子已创建
+      } else {
+        console.log('帖子图片记录插入成功');
+      }
+
+      console.log('✅ 发布成功: post_id =', post.id);
       res.json({ post_id: post.id });
     } catch (error) {
       console.error('发布保存穿搭错误:', error);
+      console.error('错误堆栈:', error.stack);
       res.status(500).json({ code: 500, message: '服务器内部错误' });
     }
   });

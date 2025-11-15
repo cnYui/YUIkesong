@@ -332,28 +332,38 @@ class _SavedLooksPageState extends State<SavedLooksPage> {
           .where((l) => _selectedIds.contains(l.id))
           .toList(growable: false);
           
+      int successCount = 0;
+      
       for (final look in looks) {
-        await ApiService.publishSavedLook(look.id);
-        
-        // 本地也发布到社区
-        final images = [look.resultImage, ...look.clothingImages];
-        CommunityPostsStore.addPost(
-          CommunityPostData(
-            id: look.id,
-            images: images,
-            username: '我保存的穿搭',
-            avatar: look.resultImage,
-          ),
-        );
+        try {
+          final response = await ApiService.publishSavedLook(look.id);
+          print('发布成功: ${response['post_id']}');
+          successCount++;
+        } catch (e) {
+          print('发布穿搭 ${look.id} 失败: $e');
+        }
       }
       
+      setState(() => _selectedIds.clear());
+      
       if (mounted) {
+        if (successCount > 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('已发布$count 套穿搭到社区'),
+              content: Text('已成功发布 $successCount 套穿搭到社区'),
+              backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
           ),
         );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('发布失败，请稍后重试'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       }
     } catch (e) {
       print('发布穿搭失败: $e');
@@ -404,7 +414,7 @@ class _SavedLookCard extends StatelessWidget {
       return imagePath;
     }
     // 否则构造Supabase公开URL
-    const supabaseUrl = 'https://tbjyhqcazhgcmtbdgwpg.supabase.co';
+    final supabaseUrl = ApiService.supabaseUrl;
     return '$supabaseUrl/storage/v1/object/public/wardrobe/$imagePath';
   }
 

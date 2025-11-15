@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../main.dart';
 import '../models/stitch_tab.dart';
 import '../services/api_service.dart';
+import '../state/fitting_room_trigger.dart';
 import '../state/wardrobe_selection_store.dart';
 import '../theme/app_theme.dart';
 import '../widgets/stitch_bottom_nav.dart';
@@ -43,7 +44,9 @@ class _WardrobePageState extends State<WardrobePage>
   List<Map<String, dynamic>> get _filteredItems {
     final selected = _categories[_selectedCategoryIndex];
     if (selected == '全部') return _clothingItems;
-    return _clothingItems.where((item) => item['category'] == selected).toList();
+    return _clothingItems
+        .where((item) => item['category'] == selected)
+        .toList();
   }
 
   List<Map<String, dynamic>> get _selectedItems {
@@ -56,7 +59,7 @@ class _WardrobePageState extends State<WardrobePage>
       if (_pendingDeleteIndex == index) {
         return;
       }
-      
+
       if (_selectedIndices.contains(index)) {
         _selectedIndices.remove(index);
       } else {
@@ -79,10 +82,10 @@ class _WardrobePageState extends State<WardrobePage>
   /// 删除衣物
   Future<void> _deleteClothingItem(int index) async {
     if (index < 0 || index >= _clothingItems.length) return;
-    
+
     final item = _clothingItems[index];
     final itemId = item['id'] as String?;
-    
+
     if (itemId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -96,19 +99,19 @@ class _WardrobePageState extends State<WardrobePage>
       });
       return;
     }
-    
+
     try {
       await ApiService.deleteClothingItem(itemId);
-      
+
       setState(() {
         _clothingItems.removeAt(index);
         _pendingDeleteIndex = null;
-        
+
         // 调整选中索引
         if (_selectedIndices.contains(index)) {
           _selectedIndices.remove(index);
         }
-        
+
         // 更新所有大于被删除索引的选中项
         final updatedIndices = <int>{};
         for (var selectedIndex in _selectedIndices) {
@@ -120,7 +123,7 @@ class _WardrobePageState extends State<WardrobePage>
         }
         _selectedIndices.clear();
         _selectedIndices.addAll(updatedIndices);
-        
+
         // 更新全局store
         WardrobeSelectionStore.setSelections(_selectedIndices);
         final imageMap = <int, String>{};
@@ -129,7 +132,7 @@ class _WardrobePageState extends State<WardrobePage>
         }
         WardrobeSelectionStore.setItemImages(imageMap);
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('✅ 衣物删除成功！'),
@@ -157,7 +160,10 @@ class _WardrobePageState extends State<WardrobePage>
         builder: (_) => WardrobeSearchPage(
           entries: List.generate(
             _clothingItems.length,
-            (index) => WardrobeSearchEntry(index: index, itemData: _clothingItems[index]),
+            (index) => WardrobeSearchEntry(
+              index: index,
+              itemData: _clothingItems[index],
+            ),
           ),
         ),
       ),
@@ -220,19 +226,17 @@ class _WardrobePageState extends State<WardrobePage>
         _error = '加载衣物失败: $e';
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('加载衣物失败: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('加载衣物失败: $e')));
     }
   }
 
   Future<void> _navigateToAddClothing() async {
-    final result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const AddClothingPage(),
-      ),
-    );
-    
+    final result = await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const AddClothingPage()));
+
     // 如果添加成功，刷新数据
     if (result != null) {
       _loadClothingItems();
@@ -310,131 +314,150 @@ class _WardrobePageState extends State<WardrobePage>
                           ),
                         )
                       : _error != null
-                          ? const SliverToBoxAdapter(
-                              child: Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(32.0),
-                                  child: Text('加载衣物失败，请重试'),
-                                ),
-                              ),
-                            )
-                          : _clothingItems.isEmpty
-                              ? const SliverToBoxAdapter(
-                                  child: Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(32.0),
-                                      child: Text('还没有添加任何衣物'),
-                                    ),
-                                  ),
-                                )
-                              : SliverGrid(
-                                  delegate: SliverChildBuilderDelegate((context, index) {
-                                    final item = _filteredItems[index];
-                                    final itemIndex = _clothingItems.indexOf(item);
-                                    final isSelected = _selectedIndices.contains(itemIndex);
-                                    return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                      ? const SliverToBoxAdapter(
+                          child: Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(32.0),
+                              child: Text('加载衣物失败，请重试'),
+                            ),
+                          ),
+                        )
+                      : _clothingItems.isEmpty
+                      ? const SliverToBoxAdapter(
+                          child: Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(32.0),
+                              child: Text('还没有添加任何衣物'),
+                            ),
+                          ),
+                        )
+                      : SliverGrid(
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final item = _filteredItems[index];
+                            final itemIndex = _clothingItems.indexOf(item);
+                            final isSelected = _selectedIndices.contains(
+                              itemIndex,
+                            );
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (_pendingDeleteIndex == itemIndex) {
+                                        // 如果点击的是待删除的项，不处理选择逻辑
+                                        return;
+                                      }
+                                      _toggleSelection(itemIndex);
+                                    },
+                                    child: Stack(
                                       children: [
-                                        Expanded(
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              if (_pendingDeleteIndex == itemIndex) {
-                                                // 如果点击的是待删除的项，不处理选择逻辑
-                                                return;
-                                              }
-                                              _toggleSelection(itemIndex);
-                                            },
-                                            child: Stack(
-                                              children: [
-                                                ClipRRect(
-                                                  borderRadius: BorderRadius.circular(20),
-                                                  child: DecoratedBox(
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                    ),
-                                                    child: Image.network(
-                                                      item['image_url'] ?? '',
-                                                      fit: BoxFit.cover,
-                                                      width: double.infinity,
-                                                      height: double.infinity,
-                                                    ),
-                                                  ),
-                                                ),
-                                                if (isSelected)
-                                                  Positioned(
-                                                    top: 8,
-                                                    right: 8,
-                                                    child: (_pendingDeleteIndex == itemIndex)
-                                                        ? GestureDetector(
-                                                            onTap: () => _deleteClothingItem(itemIndex),
-                                                            child: Container(
-                                                              height: 28,
-                                                              width: 28,
-                                                              decoration: BoxDecoration(
-                                                                color: Colors.red,
-                                                                borderRadius: BorderRadius.circular(16),
-                                                                border: Border.all(
-                                                                  color: Colors.white,
-                                                                  width: 2,
-                                                                ),
-                                                              ),
-                                                              child: const Icon(
-                                                                Icons.close,
-                                                                size: 16,
-                                                                color: Colors.white,
-                                                              ),
-                                                            ),
-                                                          )
-                                                        : GestureDetector(
-                                                            onTap: () {
-                                                              setState(() {
-                                                                _pendingDeleteIndex = itemIndex;
-                                                              });
-                                                            },
-                                                            child: Container(
-                                                              height: 28,
-                                                              width: 28,
-                                                              decoration: BoxDecoration(
-                                                                color: Colors.black,
-                                                                borderRadius: BorderRadius.circular(16),
-                                                                border: Border.all(
-                                                                  color: Colors.white,
-                                                                  width: 2,
-                                                                ),
-                                                              ),
-                                                              child: const Icon(
-                                                                Icons.check,
-                                                                size: 16,
-                                                                color: Colors.white,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                  ),
-                                              ],
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                          child: DecoratedBox(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                            ),
+                                            child: Image.network(
+                                              item['image_url'] ?? '',
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                              height: double.infinity,
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          item['name'] ?? '未命名',
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: StitchColors.textPrimary,
+                                        if (isSelected)
+                                          Positioned(
+                                            top: 8,
+                                            right: 8,
+                                            child:
+                                                (_pendingDeleteIndex ==
+                                                    itemIndex)
+                                                ? GestureDetector(
+                                                    onTap: () =>
+                                                        _deleteClothingItem(
+                                                          itemIndex,
+                                                        ),
+                                                    child: Container(
+                                                      height: 28,
+                                                      width: 28,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.red,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              16,
+                                                            ),
+                                                        border: Border.all(
+                                                          color: Colors.white,
+                                                          width: 2,
+                                                        ),
+                                                      ),
+                                                      child: const Icon(
+                                                        Icons.close,
+                                                        size: 16,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  )
+                                                : GestureDetector(
+                                                    onTap: () {
+                                                      setState(() {
+                                                        _pendingDeleteIndex =
+                                                            itemIndex;
+                                                      });
+                                                    },
+                                                    child: Container(
+                                                      height: 28,
+                                                      width: 28,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.black,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              16,
+                                                            ),
+                                                        border: Border.all(
+                                                          color: Colors.white,
+                                                          width: 2,
+                                                        ),
+                                                      ),
+                                                      child: const Icon(
+                                                        Icons.check,
+                                                        size: 16,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
                                           ),
-                                        ),
                                       ],
-                                    );
-                                  }, childCount: _filteredItems.length),
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        mainAxisSpacing: 20,
-                                        crossAxisSpacing: 20,
-                                        childAspectRatio: 0.78,
-                                      ),
+                                    ),
+                                  ),
                                 ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  item['name'] ?? '未命名',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: StitchColors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }, childCount: _filteredItems.length),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 20,
+                                crossAxisSpacing: 20,
+                                childAspectRatio: 0.78,
+                              ),
+                        ),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 120)),
               ],
@@ -532,9 +555,20 @@ class _WardrobePageState extends State<WardrobePage>
                           shape: const StadiumBorder(),
                         ),
                         onPressed: () {
+                          // 统一使用全局触发机制，避免时序问题
                           if (StitchShellCoordinator.isReady) {
-                            StitchShellCoordinator.selectTab(StitchTab.fittingRoom);
+                            // 方式1：通过coordinator切换tab
+                            // 先切换tab，再触发生成（确保页面已加载）
+                            StitchShellCoordinator.selectTab(
+                              StitchTab.fittingRoom,
+                            );
+                            // 延迟触发，确保tab切换完成
+                            Future.delayed(const Duration(milliseconds: 50), () {
+                              FittingRoomTrigger.triggerGenerate();
+                            });
                           } else {
+                            // 方式2：通过Navigator.push跳转
+                            // 先跳转，页面加载后自动触发（通过autoGenerate参数）
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (_) => AiFittingRoomPage(
@@ -543,6 +577,7 @@ class _WardrobePageState extends State<WardrobePage>
                                     Navigator.of(context).pop();
                                     StitchShellCoordinator.selectTab(tab);
                                   },
+                                  autoGenerate: true, // 从衣柜页面跳转，自动生成
                                 ),
                               ),
                             );

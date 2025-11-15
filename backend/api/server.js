@@ -11,8 +11,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Supabase配置
-const supabaseUrl = process.env.SUPABASE_URL || 'https://tbjyhqcazhgcmtbdgwpg.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRianlocWNhemhnY210YmRnd3BnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjgzNjU2OSwiZXhwIjoyMDc4NDEyNTY5fQ.rbgExIUuMb3jLJFqVr8qyrxLlPcbD3xgBHAbb1RtJos';
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('❌ 错误: 缺少必要的环境变量！');
+  console.error('请创建 .env 文件并设置以下变量:');
+  console.error('  - SUPABASE_URL');
+  console.error('  - SUPABASE_SERVICE_ROLE_KEY');
+  console.error('参考 .env.example 文件');
+  process.exit(1);
+}
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -59,7 +68,11 @@ const authenticateToken = async (req, res, next) => {
     
     // 如果标准认证失败，尝试验证自定义JWT令牌
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        return res.status(500).json({ code: 500, message: '服务器配置错误' });
+      }
+      const decoded = jwt.verify(token, jwtSecret);
       
       if (decoded && decoded.sub) {
         // 从数据库获取用户信息
@@ -382,7 +395,10 @@ app.post('/auth/login', async (req, res) => {
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24小时有效期
       },
-      process.env.JWT_SECRET || 'fallback-secret-key',
+      process.env.JWT_SECRET || (() => {
+        console.error('❌ 错误: JWT_SECRET 未设置！');
+        throw new Error('JWT_SECRET is required');
+      })(),
       { algorithm: 'HS256' }
     );
 
@@ -500,6 +516,7 @@ import { setupWardrobeRoutes } from './routes/wardrobe.js';
 import { setupAiTasksRoutes } from './routes/ai-tasks.js';
 import { setupSavedLooksRoutes } from './routes/saved-looks.js';
 import { setupCommunityRoutes } from './routes/community.js';
+import { setupWeatherRoutes } from './routes/weather.js';
 
 // 设置所有路由
 setupSelfiesRoutes(app, supabase, authenticateToken);
@@ -507,6 +524,7 @@ setupWardrobeRoutes(app, supabase, authenticateToken);
 setupAiTasksRoutes(app, supabase, authenticateToken);
 setupSavedLooksRoutes(app, supabase, authenticateToken);
 setupCommunityRoutes(app, supabase, authenticateToken);
+setupWeatherRoutes(app, supabase, authenticateToken);
 
 // 启动服务器
 app.listen(PORT, () => {

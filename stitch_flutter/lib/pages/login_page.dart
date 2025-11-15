@@ -57,7 +57,8 @@ class _LoginPageState extends State<LoginPage> {
         final data = json.decode(response.body);
         if (data['token'] != null && data['user'] != null) {
           // 登录成功，使用认证服务并跳转到主页
-          AuthService().login(data['token']);
+          final userId = data['user']['id']?.toString() ?? data['user_id']?.toString();
+          AuthService().login(data['token'], userId: userId);
           Navigator.pushReplacementNamed(context, '/');
         } else {
           setState(() {

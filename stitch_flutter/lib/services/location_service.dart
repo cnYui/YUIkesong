@@ -1,9 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// 位置服务 - 获取用户城市信息
 class LocationService {
-  static const String _apiKey = '1beb15f42b6dd9b5381b05ce51d81bd2';
+  static String get _apiKey {
+    final key = dotenv.env['AMAP_API_KEY'];
+    if (key == null || key.isEmpty) {
+      throw Exception('AMAP_API_KEY 未在 .env 文件中设置');
+    }
+    return key;
+  }
   
   /// 获取默认城市（北京）
   /// 注意：在Web环境中，地理定位可能受限，这里提供一个后备方案

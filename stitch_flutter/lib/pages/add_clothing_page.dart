@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
 import '../services/api_service.dart';
+import '../services/gemini_service.dart';
 
 class AddClothingPage extends StatefulWidget {
   const AddClothingPage({super.key});
@@ -20,17 +21,12 @@ class _AddClothingPageState extends State<AddClothingPage> {
   
   File? _imageFile;
   Uint8List? _webImage;
+  Uint8List? _originalImageBytes; // 保存原始图片用于处理
   String? _selectedCategory;
   bool _isUploading = false;
+  bool _isProcessing = false; // 图片处理状态
 
-  final List<String> _categories = [
-    '上装',
-    '下装', 
-    '连衣裙',
-    '外套',
-    '鞋履',
-    '配饰'
-  ];
+  final List<String> _categories = ['上装', '下装', '连衣裙', '外套', '鞋履', '配饰'];
 
   @override
   void dispose() {
@@ -44,16 +40,22 @@ class _AddClothingPageState extends State<AddClothingPage> {
       final XFile? pickedFile = await picker.pickImage(source: source);
       
       if (pickedFile != null) {
+        // 读取原始图片字节
+        final originalBytes = await pickedFile.readAsBytes();
+        _originalImageBytes = originalBytes;
+
+        // 显示原始图片
         if (kIsWeb) {
-          final bytes = await pickedFile.readAsBytes();
           setState(() {
-            _webImage = bytes;
+            _webImage = originalBytes;
             _imageFile = null;
+            _isProcessing = true;
           });
         } else {
           setState(() {
             _imageFile = File(pickedFile.path);
             _webImage = null;
+            _isProcessing = true;
           });
         }
         
@@ -62,11 +64,130 @@ class _AddClothingPageState extends State<AddClothingPage> {
           final fileName = pickedFile.name;
           _nameController.text = fileName.split('.').first;
         }
+
+        // 调用Gemini API处理图片
+        await _processImageWithGemini(originalBytes, pickedFile.name);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('选择图片失败: $e')),
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('选择图片失败: $e')));
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
+  }
+
+  /// 使用Gemini API处理图片
+  /// 只有在用户登录后才调用Gemini API
+  Future<void> _processImageWithGemini(
+    Uint8List imageBytes,
+    String fileName,
+  ) async {
+    // 检查用户是否已登录
+    if (!ApiService.isAuthenticated) {
+      if (kDebugMode) {
+        print('⚠️ 用户未登录，跳过Gemini图片处理');
+      }
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      if (kDebugMode) {
+        print('🔄 开始使用Gemini处理图片...');
+      }
+
+      // 获取图片MIME类型
+      final mimeType = _getImageMimeType(fileName);
+
+      // 调用Gemini API处理图片
+      final processedBytes = await GeminiService.processClothingImage(
+        imageBytes,
+        mimeType,
       );
+
+      if (kDebugMode) {
+        print('✅ Gemini图片处理完成，大小: ${processedBytes.length} bytes');
+      }
+
+      // 更新UI显示处理后的图片
+      if (mounted) {
+        // 对于非Web平台，先将处理后的图片保存为临时文件
+        File? tempFile;
+        if (!kIsWeb) {
+          final tempDir = Directory.systemTemp;
+          tempFile = File(
+            '${tempDir.path}/processed_${DateTime.now().millisecondsSinceEpoch}.jpg',
+          );
+          await tempFile.writeAsBytes(processedBytes);
+        }
+
+        setState(() {
+          if (kIsWeb) {
+            _webImage = processedBytes;
+            _imageFile = null;
+          } else {
+            _imageFile = tempFile;
+            _webImage = null;
+          }
+          _isProcessing = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ 图片处理完成！'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Gemini图片处理失败: $e');
+      }
+
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+
+        // 根据错误类型显示不同的提示
+        String errorMessage;
+        Color backgroundColor;
+        int duration;
+
+        if (e is GeminiQuotaException) {
+          // 配额错误：显示友好的提示
+          errorMessage = 'Gemini API 配额已用完，将使用原始图片。您可以稍后再试或联系管理员。';
+          backgroundColor = Colors.orange;
+          duration = 5;
+        } else {
+          // 其他错误：显示错误信息
+          final errorStr = e.toString();
+          if (errorStr.length > 100) {
+            errorMessage = '图片处理失败，将使用原始图片: ${errorStr.substring(0, 100)}...';
+          } else {
+            errorMessage = '图片处理失败，将使用原始图片: $errorStr';
+          }
+          backgroundColor = Colors.orange;
+          duration = 4;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: backgroundColor,
+            duration: Duration(seconds: duration),
+          ),
+        );
+      }
     }
   }
 
@@ -123,16 +244,16 @@ class _AddClothingPageState extends State<AddClothingPage> {
     }
 
     if (_imageFile == null && _webImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请选择衣物图片')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请选择衣物图片')));
       return;
     }
 
     if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请选择衣物类别')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请选择衣物类别')));
       return;
     }
 
@@ -141,22 +262,31 @@ class _AddClothingPageState extends State<AddClothingPage> {
     });
 
     try {
-      // 获取文件名
+      // 获取文件名和图片字节（使用处理后的图片，如果处理失败则使用原始图片）
       String filename;
       Uint8List imageBytes;
       
       if (_imageFile != null) {
         filename = _imageFile!.path.split('/').last;
         imageBytes = await _imageFile!.readAsBytes();
-      } else {
+      } else if (_webImage != null) {
         filename = '${DateTime.now().millisecondsSinceEpoch}.jpg';
         imageBytes = _webImage!;
+      } else if (_originalImageBytes != null) {
+        // 如果处理失败，使用原始图片
+        filename = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+        imageBytes = _originalImageBytes!;
+      } else {
+        throw Exception('没有可用的图片数据');
       }
 
       final contentType = _getImageMimeType(filename);
 
       // 1. 获取上传URL
-      final uploadData = await ApiService.getClothingUploadUrl(filename, contentType);
+      final uploadData = await ApiService.getClothingUploadUrl(
+        filename,
+        contentType,
+      );
       
       // 2. 上传图片
       await ApiService.uploadFileToStorage(
@@ -173,16 +303,16 @@ class _AddClothingPageState extends State<AddClothingPage> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('衣物添加成功！')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('衣物添加成功！')));
         Navigator.pop(context, clothingData);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('上传失败: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('上传失败: $e')));
       }
     } finally {
       if (mounted) {
@@ -232,7 +362,22 @@ class _AddClothingPageState extends State<AddClothingPage> {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: Colors.grey[300]!),
                     ),
-                    child: _imageFile != null
+                    child: _isProcessing
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const CircularProgressIndicator(),
+                              const SizedBox(height: 16),
+                              Text(
+                                '正在处理图片...',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          )
+                        : _imageFile != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(16),
                             child: Image.file(
@@ -301,7 +446,10 @@ class _AddClothingPageState extends State<AddClothingPage> {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Colors.blue),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -338,7 +486,10 @@ class _AddClothingPageState extends State<AddClothingPage> {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Colors.blue),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                 ),
                 items: _categories.map((category) {
                   return DropdownMenuItem(
@@ -380,7 +531,9 @@ class _AddClothingPageState extends State<AddClothingPage> {
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : const Text(

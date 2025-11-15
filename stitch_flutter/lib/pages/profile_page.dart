@@ -50,19 +50,44 @@ class _ProfilePageState extends State<ProfilePage>
       return;
     }
 
+    // 先尝试从 AuthService 获取缓存的头像
+    final authService = AuthService();
+    if (authService.avatarUrl != null && authService.avatarUrl!.isNotEmpty) {
+      if (mounted) {
+        setState(() {
+          _defaultAvatarUrl = authService.avatarUrl;
+          _isLoadingAvatar = false;
+        });
+      }
+      // 后台更新
+      _loadDefaultAvatarFromServer();
+      return;
+    }
+
     setState(() {
       _isLoadingAvatar = true;
     });
+
+    // 从服务器加载
+    await _loadDefaultAvatarFromServer();
+  }
+
+  Future<void> _loadDefaultAvatarFromServer() async {
+    if (!ApiService.isAuthenticated) {
+      return;
+    }
 
     try {
       final response = await ApiService.getSelfies();
       final List<dynamic> selfieList = response['list'] ?? [];
       
       if (selfieList.isEmpty) {
-        setState(() {
-          _defaultAvatarUrl = null;
-          _isLoadingAvatar = false;
-        });
+        if (mounted) {
+          setState(() {
+            _defaultAvatarUrl = null;
+            _isLoadingAvatar = false;
+          });
+        }
         return;
       }
 

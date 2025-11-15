@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../state/city_selection_store.dart';
+import '../services/auth_service.dart';
+import '../services/api_service.dart';
 import 'city_selection_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -35,6 +37,61 @@ class _SettingsPageState extends State<SettingsPage> {
       return store.selectedCity!.name;
     }
     return '自动定位';
+  }
+
+  /// 退出登录
+  Future<void> _handleLogout() async {
+    // 显示确认对话框
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('退出登录'),
+        content: const Text('确定要退出当前账号吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              '退出',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      // 清除登录状态
+      AuthService().logout();
+      ApiService.clearToken();
+
+      if (mounted) {
+        // 返回到登录界面并清除所有路由
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        
+        // 显示成功提示
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('已退出登录'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('退出失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -92,6 +149,18 @@ class _SettingsPageState extends State<SettingsPage> {
                 _SettingItem(icon: Icons.info, title: '关于我们'),
               ],
             ),
+            const SizedBox(height: 16),
+            // 账号设置
+            _SettingCard(
+              items: [
+                _SettingItem(
+                  icon: Icons.logout,
+                  title: '退出登录',
+                  onTap: _handleLogout,
+                  isDestructive: true,
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -136,6 +205,10 @@ class _SettingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 确定文字颜色（破坏性操作用红色）
+    final textColor = item.isDestructive ? Colors.red : Colors.black;
+    final iconColor = item.isDestructive ? Colors.red : const Color(0xFF6B7280);
+    
     return Column(
       children: [
         InkWell(
@@ -144,12 +217,12 @@ class _SettingRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
             child: Row(
               children: [
-                Icon(item.icon, color: const Color(0xFF6B7280)),
+                Icon(item.icon, color: iconColor),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
                     item.title,
-                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                    style: TextStyle(fontSize: 16, color: textColor),
                   ),
                 ),
                 if (item.subtitle != null)
@@ -157,8 +230,10 @@ class _SettingRow extends StatelessWidget {
                     item.subtitle!,
                     style: const TextStyle(fontSize: 14, color: Colors.black),
                   ),
-                const SizedBox(width: 8),
-                const Icon(Icons.chevron_right, color: Color(0xFFB0B1B6)),
+                if (item.subtitle != null)
+                  const SizedBox(width: 8),
+                if (!item.isDestructive)
+                  const Icon(Icons.chevron_right, color: Color(0xFFB0B1B6)),
               ],
             ),
           ),
@@ -181,10 +256,12 @@ class _SettingItem {
     required this.title,
     this.subtitle,
     this.onTap,
+    this.isDestructive = false,
   });
 
   final IconData icon;
   final String title;
   final String? subtitle;
   final VoidCallback? onTap;
+  final bool isDestructive; // 是否是破坏性操作（如退出登录），会显示红色
 }
