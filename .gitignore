@@ -26,9 +26,9 @@ backend/api/node_modules/
 backend/**/.env
 *.env
 
-# Flutter
-stitch_flutter/.env
-stitch_flutter/**/.env
+# Sensitive configuration files
+stitch_flutter/lib/config/env.dart
+.vscode/launch.json
 
 # Logs
 *.log

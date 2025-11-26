@@ -1,16 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../config/api_config.dart';
 
 /// 高德天气API服务
 class WeatherService {
-  static String get _apiKey {
-    final key = dotenv.env['AMAP_API_KEY'];
-    if (key == null || key.isEmpty) {
-      throw Exception('AMAP_API_KEY 未在 .env 文件中设置');
-    }
-    return key;
-  }
+  static String get _apiKey => ApiConfig.amapApiKey;
   static const String _baseUrl = 'https://restapi.amap.com/v3/weather/weatherInfo';
 
   /// 获取实时天气

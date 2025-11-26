@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../config/api_config.dart';
 import '../services/api_service.dart';
 import '../state/saved_looks_store.dart';
 import '../state/community_posts_store.dart';
@@ -414,8 +415,7 @@ class _SavedLookCard extends StatelessWidget {
       return imagePath;
     }
     // 否则构造Supabase公开URL
-    final supabaseUrl = ApiService.supabaseUrl;
-    return '$supabaseUrl/storage/v1/object/public/wardrobe/$imagePath';
+    return '${ApiConfig.supabaseUrl}/storage/v1/object/public/wardrobe/$imagePath';
   }
 
   @override

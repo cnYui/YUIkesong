@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/api_config.dart';
 import '../services/api_service.dart';
 import '../state/community_posts_store.dart';
 import '../theme/app_theme.dart';
@@ -200,8 +201,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    final supabaseUrl = ApiService.supabaseUrl;
-    return '$supabaseUrl/storage/v1/object/public/wardrobe/$imagePath';
+    return '${ApiConfig.supabaseUrl}/storage/v1/object/public/wardrobe/$imagePath';
   }
 
   @override
@@ -518,8 +518,7 @@ class _CommentItem extends StatelessWidget {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    final supabaseUrl = ApiService.supabaseUrl;
-    return '$supabaseUrl/storage/v1/object/public/wardrobe/$imagePath';
+    return '${ApiConfig.supabaseUrl}/storage/v1/object/public/wardrobe/$imagePath';
   }
 
   String _formatTime(DateTime time) {

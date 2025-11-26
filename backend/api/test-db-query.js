@@ -4,12 +4,13 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ 错误: 缺少必要的环境变量！');
-  console.error('请创建 .env 文件并设置 SUPABASE_URL 和 SUPABASE_SERVICE_ROLE_KEY');
+  console.error('❌ 错误：缺少必需的环境变量');
+  console.error('请确保在 .env 文件中设置了 SUPABASE_URL 和 SUPABASE_SERVICE_ROLE_KEY');
   process.exit(1);
 }
 
@@ -17,15 +18,15 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function testCommunityQuery() {
   console.log('=== 测试社区帖子数据库查询 ===\n');
-  
+
   try {
     // 模拟后端的查询
     const page = 1;
     const pageSize = 6;
     const offset = (page - 1) * pageSize;
-    
+
     console.log(`查询参数: page=${page}, pageSize=${pageSize}, offset=${offset}`);
-    
+
     // 执行与后端相同的查询
     const { data: posts, error, count } = await supabase
       .from('community_posts')
@@ -37,7 +38,7 @@ async function testCommunityQuery() {
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .range(offset, offset + pageSize - 1);
-    
+
     if (error) {
       console.error('❌ 查询失败!');
       console.error('错误详情:', error);
@@ -46,11 +47,11 @@ async function testCommunityQuery() {
       console.error('错误提示:', error.hint);
       return;
     }
-    
+
     console.log('✅ 查询成功!');
     console.log(`找到 ${posts?.length || 0} 个帖子`);
     console.log(`总数: ${count}`);
-    
+
     if (posts && posts.length > 0) {
       console.log('\n帖子详情:');
       posts.forEach((post, index) => {
@@ -74,7 +75,7 @@ async function testCommunityQuery() {
         total: 0
       }, null, 2));
     }
-    
+
   } catch (error) {
     console.error('❌ 测试异常:', error);
     console.error('详细错误:', error.stack);

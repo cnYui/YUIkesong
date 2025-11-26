@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'models/stitch_tab.dart';
 import 'pages/about_page.dart';
@@ -18,18 +17,8 @@ import 'pages/settings_page.dart';
 import 'pages/wardrobe_page.dart';
 import 'theme/app_theme.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // 加载环境变量
-  try {
-    await dotenv.load(fileName: ".env");
-    print('✅ 环境变量加载成功');
-  } catch (e) {
-    print('⚠️ 警告: 无法加载 .env 文件: $e');
-    print('请确保已创建 .env 文件（参考 .env.example）');
-  }
-  
   runApp(const StitchApp());
 }
 

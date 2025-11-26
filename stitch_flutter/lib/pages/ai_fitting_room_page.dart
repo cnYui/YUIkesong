@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../config/api_config.dart';
 import '../models/stitch_tab.dart';
 import '../services/api_service.dart';
 import '../services/gemini_service.dart';
@@ -111,18 +112,16 @@ class _AiFittingRoomPageState extends State<AiFittingRoomPage>
   }
 
   /// 将image_path转换为完整的Supabase公开URL
-  String _getImageUrl(String imagePath) {
+  String _getImageUrl(String imagePath, String bucket) {
     // 如果已经是完整URL，直接返回
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
     // 否则构造Supabase公开URL
-    final supabaseUrl = ApiService.supabaseUrl;
-    // 判断是自拍还是衣物
-    if (imagePath.contains('selfies')) {
-      return '$supabaseUrl/storage/v1/object/public/selfies/$imagePath';
+    if (bucket == 'selfies') {
+      return '${ApiConfig.supabaseUrl}/storage/v1/object/public/selfies/$imagePath';
     } else {
-      return '$supabaseUrl/storage/v1/object/public/wardrobe/$imagePath';
+      return '${ApiConfig.supabaseUrl}/storage/v1/object/public/wardrobe/$imagePath';
     }
   }
 

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../config/api_config.dart';
 
 /// Gemini API配额异常
 class GeminiQuotaException implements Exception {
@@ -18,13 +18,7 @@ class GeminiQuotaException implements Exception {
 /// Gemini API服务
 /// 用于处理衣物图片：去除背景、平铺展示等
 class GeminiService {
-  static String get _apiKey {
-    final key = dotenv.env['GEMINI_API_KEY'];
-    if (key == null || key.isEmpty) {
-      throw Exception('GEMINI_API_KEY 未在 .env 文件中设置');
-    }
-    return key;
-  }
+  static String get _apiKey => ApiConfig.geminiApiKey;
 
   // 模型配置
   // 可选模型：

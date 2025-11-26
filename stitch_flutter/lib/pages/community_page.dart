@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../config/api_config.dart';
 import '../models/stitch_tab.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -400,8 +401,7 @@ class _PostCard extends StatelessWidget {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    final supabaseUrl = ApiService.supabaseUrl;
-    return '$supabaseUrl/storage/v1/object/public/wardrobe/$imagePath';
+    return '${ApiConfig.supabaseUrl}/storage/v1/object/public/wardrobe/$imagePath';
   }
 
   @override

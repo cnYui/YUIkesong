@@ -1,20 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiService {
-  static String get baseUrl {
-    return dotenv.env['API_BASE_URL'] ?? 'http://localhost:3001';
-  }
-  
-  static String get supabaseUrl {
-    final url = dotenv.env['SUPABASE_URL'];
-    if (url == null || url.isEmpty) {
-      throw Exception('SUPABASE_URL 未在 .env 文件中设置');
-    }
-    return url;
-  }
+  static const String baseUrl = 'http://localhost:3001';
   static String? _token;
 
   static void setToken(String token) {

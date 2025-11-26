@@ -10,16 +10,16 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Supabase配置
+// Supabase配置 - 必须通过环境变量提供
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ 错误: 缺少必要的环境变量！');
-  console.error('请创建 .env 文件并设置以下变量:');
+  console.error('❌ 错误：缺少必需的环境变量');
+  console.error('请确保在 .env 文件中设置了以下变量：');
   console.error('  - SUPABASE_URL');
   console.error('  - SUPABASE_SERVICE_ROLE_KEY');
-  console.error('参考 .env.example 文件');
+  console.error('参考 .env.example 文件获取更多信息');
   process.exit(1);
 }
 
@@ -60,20 +60,21 @@ const authenticateToken = async (req, res, next) => {
   try {
     // 首先尝试使用Supabase标准认证
     const { data: { user }, error } = await supabase.auth.getUser(token);
-    
+
     if (!error && user) {
       req.user = user;
       return next();
     }
-    
+
     // 如果标准认证失败，尝试验证自定义JWT令牌
     try {
       const jwtSecret = process.env.JWT_SECRET;
       if (!jwtSecret) {
+        console.error('JWT_SECRET 未设置');
         return res.status(500).json({ code: 500, message: '服务器配置错误' });
       }
       const decoded = jwt.verify(token, jwtSecret);
-      
+
       if (decoded && decoded.sub) {
         // 从数据库获取用户信息
         const { data: profile, error: profileError } = await supabase
@@ -81,24 +82,24 @@ const authenticateToken = async (req, res, next) => {
           .select('id, nickname, avatar_url')
           .eq('id', decoded.sub)
           .single();
-          
+
         if (profileError || !profile) {
           return res.status(401).json({ code: 401, message: '用户不存在' });
         }
-        
+
         // 创建用户对象
         req.user = {
           id: decoded.sub,
           email: decoded.email,
           user_metadata: decoded.user_metadata || {}
         };
-        
+
         return next();
       }
     } catch (jwtError) {
       console.error('JWT验证失败:', jwtError);
     }
-    
+
     return res.status(401).json({ code: 401, message: '无效的访问令牌' });
   } catch (error) {
     console.error('认证错误:', error);
@@ -155,7 +156,7 @@ app.post('/auth/register', async (req, res) => {
       // 用户已存在
       console.log('用户已存在，邮箱:', email);
       userId = existingUser.id;
-      
+
       if (existingUser.email_confirmed_at) {
         console.log('用户邮箱已确认');
       } else {
@@ -178,7 +179,7 @@ app.post('/auth/register', async (req, res) => {
       // 新用户注册
       console.log('新用户注册，邮箱:', email);
       isNewUser = true;
-      
+
       // 使用Admin API直接创建已确认的用户
       try {
         const { data: adminData, error: adminError } = await supabase.auth.admin.createUser({
@@ -246,7 +247,7 @@ app.post('/auth/register', async (req, res) => {
         // 如果资料创建失败，但不删除用户，允许重试
         return res.status(500).json({ code: 500, message: '用户资料创建失败' });
       }
-      
+
       console.log('用户注册成功！用户ID:', userId);
       res.json({ id: userId });
     } else {
@@ -278,7 +279,7 @@ app.post('/auth/login', async (req, res) => {
     let targetUser;
     try {
       const { data: users, error: listError } = await supabase.auth.admin.listUsers();
-      
+
       if (listError) {
         console.error('获取用户列表失败:', listError);
         return res.status(500).json({ code: 500, message: '系统错误' });
@@ -319,7 +320,7 @@ app.post('/auth/login', async (req, res) => {
         // 如果密码验证通过且邮箱已确认，直接返回成功
         if (authData.user.email_confirmed_at) {
           console.log('邮箱已确认，登录成功');
-          
+
           // 获取用户资料
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
@@ -346,18 +347,18 @@ app.post('/auth/login', async (req, res) => {
 
     // 步骤3: 密码验证通过，处理邮箱未确认的情况
     console.log('密码验证通过，检查邮箱确认状态...');
-    
+
     if (!targetUser.email_confirmed_at) {
       console.log('用户邮箱未确认，现在确认邮箱...');
       try {
         const { error: confirmError } = await supabase.auth.admin.updateUserById(
           targetUser.id,
-          { 
+          {
             email_confirmed: true,
             user_metadata: targetUser.user_metadata || {}
           }
         );
-        
+
         if (confirmError) {
           console.error('邮箱确认失败:', confirmError);
           // 邮箱确认失败，但密码正确，仍然允许登录
@@ -372,7 +373,7 @@ app.post('/auth/login', async (req, res) => {
 
     // 步骤4: 创建自定义登录会话
     console.log('创建自定义登录会话...');
-    
+
     // 获取用户资料
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -386,6 +387,12 @@ app.post('/auth/login', async (req, res) => {
     }
 
     // 创建自定义JWT令牌
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('JWT_SECRET 未设置');
+      return res.status(500).json({ code: 500, message: '服务器配置错误' });
+    }
+
     const customToken = jwt.sign(
       {
         sub: targetUser.id,
@@ -395,15 +402,12 @@ app.post('/auth/login', async (req, res) => {
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24小时有效期
       },
-      process.env.JWT_SECRET || (() => {
-        console.error('❌ 错误: JWT_SECRET 未设置！');
-        throw new Error('JWT_SECRET is required');
-      })(),
+      jwtSecret,
       { algorithm: 'HS256' }
     );
 
     console.log('登录成功！用户ID:', targetUser.id, '用户名:', profile.nickname);
-    
+
     // 更新最后登录时间
     await supabase
       .from('profiles')

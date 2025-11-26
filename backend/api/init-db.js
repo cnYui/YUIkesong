@@ -10,12 +10,13 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
+
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ 错误: 缺少必要的环境变量！');
-  console.error('请创建 .env 文件并设置 SUPABASE_URL 和 SUPABASE_SERVICE_ROLE_KEY');
+  console.error('❌ 错误：缺少必需的环境变量');
+  console.error('请确保在 .env 文件中设置了 SUPABASE_URL 和 SUPABASE_SERVICE_ROLE_KEY');
   process.exit(1);
 }
 
@@ -27,12 +28,12 @@ async function checkTableExists(tableName) {
       .from(tableName)
       .select('*')
       .limit(1);
-    
+
     if (error) {
       console.log(`❌ 表 ${tableName} 不存在或无法访问:`, error.message);
       return false;
     }
-    
+
     console.log(`✅ 表 ${tableName} 存在`);
     return true;
   } catch (error) {
@@ -43,7 +44,7 @@ async function checkTableExists(tableName) {
 
 async function checkDatabase() {
   console.log('=== 开始检查数据库表 ===\n');
-  
+
   const tables = [
     'profiles',
     'community_posts',
@@ -51,32 +52,32 @@ async function checkDatabase() {
     'community_likes',
     'community_comments'
   ];
-  
+
   const results = {};
-  
+
   for (const table of tables) {
     results[table] = await checkTableExists(table);
   }
-  
+
   console.log('\n=== 检查结果汇总 ===');
   const allExist = Object.values(results).every(exists => exists);
-  
+
   if (allExist) {
     console.log('✅ 所有必要的表都存在！');
-    
+
     // 检查数据
     console.log('\n=== 检查数据 ===');
-    
+
     const { count: profileCount } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true });
     console.log(`Profiles 表中有 ${profileCount || 0} 条记录`);
-    
+
     const { count: postCount } = await supabase
       .from('community_posts')
       .select('*', { count: 'exact', head: true });
     console.log(`Community Posts 表中有 ${postCount || 0} 条记录`);
-    
+
   } else {
     console.log('❌ 部分表不存在，需要执行初始化SQL脚本！');
     console.log('\n请执行以下步骤：');
@@ -90,7 +91,7 @@ async function checkDatabase() {
 // 测试后端API连接
 async function testBackendConnection() {
   console.log('\n=== 测试后端API连接 ===');
-  
+
   try {
     const response = await fetch('http://localhost:3001/health');
     if (response.ok) {
