@@ -41,7 +41,7 @@ export function setupAiTasksRoutes(app, supabase, authenticateToken) {
 
       // 这里可以添加调用AI服务的逻辑
       // 例如：调用外部AI API进行图片处理
-      
+
       res.json({ id: data.id, status: data.status });
     } catch (error) {
       console.error('创建AI任务错误:', error);
@@ -101,7 +101,7 @@ export function setupAiTasksRoutes(app, supabase, authenticateToken) {
       // 更新任务状态为处理中
       await supabase
         .from('ai_tasks')
-        .update({ 
+        .update({
           status: 'processing',
           updated_at: new Date().toISOString()
         })
@@ -111,12 +111,13 @@ export function setupAiTasksRoutes(app, supabase, authenticateToken) {
       setTimeout(async () => {
         try {
           // 生成模拟结果URL
-          const resultUrl = `https://tbjyhqcazhgcmtbdgwpg.supabase.co/storage/v1/object/public/ai-results/${userId}/${id}_result.jpg`;
-          
+          const supabaseUrl = process.env.SUPABASE_URL || 'your_supabase_url';
+          const resultUrl = `${supabaseUrl}/storage/v1/object/public/ai-results/${userId}/${id}_result.jpg`;
+
           // 更新任务状态为完成
           await supabase
             .from('ai_tasks')
-            .update({ 
+            .update({
               status: 'finished',
               result_url: resultUrl,
               updated_at: new Date().toISOString()
@@ -126,11 +127,11 @@ export function setupAiTasksRoutes(app, supabase, authenticateToken) {
           console.log(`AI任务 ${id} 处理完成`);
         } catch (error) {
           console.error('AI任务处理失败:', error);
-          
+
           // 更新任务状态为失败
           await supabase
             .from('ai_tasks')
-            .update({ 
+            .update({
               status: 'failed',
               updated_at: new Date().toISOString()
             })

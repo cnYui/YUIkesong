@@ -71,6 +71,8 @@ SELECT * FROM storage.buckets;
 确保后端API的 `.env` 文件包含正确的Supabase配置：
 
 ```
-SUPABASE_URL=https://tbjyhqcazhgcmtbdgwpg.supabase.co
-SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRianlocWNhemhnY210YmRnd3BnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjgzNjU2OSwiZXhwIjoyMDc4NDEyNTY5fQ.rbgExIUuMb3jLJFqVr8qyrxLlPcbD3xgBHAbb1RtJos
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SERVICE_KEY=your_supabase_service_role_key
 ```
+
+请参考 `backend/api/.env.example` 文件获取完整配置示例。
